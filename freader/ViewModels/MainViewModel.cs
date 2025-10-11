@@ -1,7 +1,9 @@
-﻿
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace freader.ViewModels;
 
-public class MainViewModel : ViewModelBase
+public partial class MainViewModel : ViewModelBase
 {
-    public string Greeting { get; } = "I should've just used expo!";
+    [ObservableProperty]
+    private string _greeting = "Welcome to Avalonia!";
 }
