@@ -1,13 +1,13 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using Avalonia.Markup.Xaml;
-using freader.ViewModels;
 using freader.Views;
 
 using System.Threading;
+using freader.ViewModels;
+using ShadUI;
 
 
 namespace freader;
@@ -24,9 +24,6 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
-            // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
-
             _appMutex = new Mutex(true, "FreaderSingleInstanceMutex", out var createdNew);
             if (!createdNew)
             {
@@ -34,11 +31,19 @@ public partial class App : Application
                 instanceDialog.Show();
                 return;
             }
+
             DisableAvaloniaDataAnnotationValidation();
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = new MainViewModel()
-            };
+            var provider = new Services.ServiceProvider();
+
+            var themeWatcher = provider.GetService<ThemeWatcher>();
+            themeWatcher.Initialize();
+            var viewModel = provider.GetService<MainWindowViewModel>();
+            viewModel.Initialize();
+
+            var mainWindow = new MainWindow { DataContext = viewModel };
+            this.RegisterTrayIconsEvents(mainWindow, viewModel);
+
+            desktop.MainWindow = mainWindow;  // Use the mainWindow you just created!  
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
@@ -50,7 +55,6 @@ public partial class App : Application
 
         base.OnFrameworkInitializationCompleted();
     }
-
     private void DisableAvaloniaDataAnnotationValidation()
     {
         // Get an array of plugins to remove
@@ -63,4 +67,5 @@ public partial class App : Application
             BindingPlugins.DataValidators.Remove(plugin);
         }
     }
+
 }
