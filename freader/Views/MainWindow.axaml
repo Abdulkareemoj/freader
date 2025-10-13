@@ -1,13 +1,150 @@
-<shadui:Window xmlns="https://github.com/avaloniaui"   
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"  
-        xmlns:vm="using:freader.ViewModels"  
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"  
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"  
-        xmlns:views="clr-namespace:freader.Views"  
-        xmlns:shadui="clr-namespace:ShadUI;assembly=ShadUI"  
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"  
-        x:Class="freader.Views.MainWindow"  
-        Icon="/Assets/avalonia-logo.ico"  
-        Title="freader">    
-        <views:MainView />  
+<shadui:Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:freader.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:freader.Views"
+      xmlns:local="clr-namespace:freader.Assets"
+        xmlns:shadui="clr-namespace:ShadUI;assembly=ShadUI"
+        xmlns:converters="clr-namespace:freader.Converters"
+        x:Name="Window"
+        Width="1024"
+        Height="768"
+        x:DataType="vm:MainWindowViewModel"
+        x:Class="freader.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        SaveWindowState="True"
+        TitleFontWeight="SemiBold"
+        WindowStartupLocation="CenterScreen"
+        mc:Ignorable="d"
+        Title="freader">
+
+<shadui:Window.RightWindowTitleBarContent>    
+    <StackPanel Orientation="Horizontal" Spacing="8">    
+        <Button    
+            Width="30"    
+            Height="30"    
+            Background="{DynamicResource SidebarBackgroundColor}"    
+            Command="{Binding SwitchThemeCommand}"    
+            CornerRadius="{DynamicResource MdCornerRadius}"    
+            ToolTip.Tip="Switch Theme">  
+            <TextBlock   
+
+FontFamily="{StaticResource LucideIcon}"
+      Classes="LucideIcon"    FontSize="24"  
+                Foreground="{DynamicResource ForegroundColor}"  
+                Text="{Binding CurrentTheme, Converter={x:Static converters:ThemeModeConverters.ToLucideIcon}}" />  
+        </Button>    
+    </StackPanel>    
+</shadui:Window.RightWindowTitleBarContent>  
+
+  <Grid ColumnDefinitions="Auto *">
+    <!-- Left Sidebar Navigation -->
+    <shadui:Sidebar
+        Grid.Column="0"
+        Width="220"
+        MinWidth="60"
+        Padding="8"
+    BorderBrush="{DynamicResource BorderColor30}"  
+    BorderThickness="0,0,1,0"  
+        CurrentRoute="{Binding CurrentRoute}"
+        Expanded="{Binding #Toggler.IsChecked}">
+      <shadui:Sidebar.Header>
+        <ToggleButton
+            Name="Toggler"
+            Width="20"
+            Height="20"
+            Margin="10"
+            HorizontalAlignment="Left"
+            CornerRadius="{DynamicResource LgCornerRadius}"
+            Theme="{DynamicResource SideTogglerTheme}">
+          <Viewbox>
+            <TextBlock
+               FontFamily="{StaticResource LucideIcon}"
+                Classes="LucideIcon"    FontSize="16"
+                Foreground="{DynamicResource ForegroundColor}"
+                Text="&#57646;" />
+          </Viewbox>
+        </ToggleButton>
+      </shadui:Sidebar.Header>
+
+      <!-- Main Navigation Items -->
+      <StackPanel Spacing="4">
+      <shadui:SidebarItem    
+    Route="home"    
+    Content="Home"    
+    Command="{Binding OpenHomeCommand}">    
+    <shadui:SidebarItem.Icon>    
+        <PathIcon   
+            Width="16"   
+            Height="16"  
+            Data="{x:Static local:Icons.Home}"  
+            Foreground="{DynamicResource ForegroundColor}" />  
+    </shadui:SidebarItem.Icon>    
+</shadui:SidebarItem>  
+  
+<shadui:SidebarItem    
+    Route="library"    
+    Content="Library"    
+    Command="{Binding OpenLibraryCommand}">    
+    <shadui:SidebarItem.Icon>    
+        <PathIcon   
+            Width="16"   
+            Height="16"  
+            Data="{x:Static local:Icons.Library}"  
+            Foreground="{DynamicResource ForegroundColor}" />  
+    </shadui:SidebarItem.Icon>    
+</shadui:SidebarItem>  
+  
+<shadui:SidebarItem    
+    Route="discover"    
+    Content="Discover"    
+    Command="{Binding OpenDiscoverCommand}">    
+    <shadui:SidebarItem.Icon>    
+        <PathIcon   
+            Width="16"   
+            Height="16"  
+            Data="{x:Static local:Icons.Discover}"  
+            Foreground="{DynamicResource ForegroundColor}" />  
+    </shadui:SidebarItem.Icon>    
+</shadui:SidebarItem>  
+  
+<shadui:SidebarItem    
+    Route="collections"    
+    Content="Collections"    
+    Command="{Binding OpenCollectionsCommand}">    
+    <shadui:SidebarItem.Icon>    
+        <PathIcon   
+            Width="16"   
+            Height="16"  
+            Data="{x:Static local:Icons.Collections}"  
+            Foreground="{DynamicResource ForegroundColor}" />  
+    </shadui:SidebarItem.Icon>    
+</shadui:SidebarItem>  
+  
+      </StackPanel>
+
+  <!-- Settings in Footer -->  
+<shadui:Sidebar.Footer>    
+    <shadui:SidebarItem    
+        Route="settings"    
+        Content="Settings"    
+        Command="{Binding OpenSettingsCommand}">    
+        <shadui:SidebarItem.Icon>    
+            <PathIcon   
+                Width="16"   
+                Height="16"  
+                Data="{x:Static local:Icons.Settings}"  
+                Foreground="{DynamicResource ForegroundColor}" />  
+        </shadui:SidebarItem.Icon>    
+    </shadui:SidebarItem>    
+</shadui:Sidebar.Footer>
+    </shadui:Sidebar>
+
+    <!-- Main Content Area - switches between pages -->
+    <TransitioningContentControl
+        Grid.Column="1"
+        Content="{Binding SelectedPage}" />
+  </Grid>
+
 </shadui:Window>
