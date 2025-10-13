@@ -20,6 +20,8 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Jab" />
+    <PackageReference Include="LucideAvalonia" />
     <PackageReference Include="ShadUI" />
   </ItemGroup>
 </Project>
