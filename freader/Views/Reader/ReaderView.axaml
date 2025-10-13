@@ -1,0 +1,29 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:freader.Views.Reader"
+    xmlns:vm="using:freader.ViewModels"
+    xmlns:shad="using:ShadUI.Controls"
+    x:Class="freader.Views.Reader.ReaderView"
+    x:CompileBindings="True"
+    x:DataType="vm:ReaderViewModel"
+    Background="{DynamicResource Surface}">
+
+    <DockPanel>
+        <!-- Toolbar -->
+        <local:ReaderToolbar DockPanel.Dock="Top"
+                             DataContext="{Binding Toolbar}" />
+
+        <!-- Main Reading Area -->
+        <ScrollViewer Margin="20"
+                      VerticalScrollBarVisibility="Auto">
+            <TextBlock
+                Text="{Binding BookContent}"
+                FontSize="{Binding FontSize}"
+                Foreground="{DynamicResource Text}"
+                TextWrapping="Wrap"
+                LineHeight="26"
+                TextAlignment="Justify" />
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>
