@@ -100,5 +100,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         SelectedPage = _settingsViewModel;
     }
 
+    // drawer state management 
+    [ObservableProperty]
+    private bool _isDrawerOpen = false;
 
+    [RelayCommand]
+    private void ToggleDrawer()
+    {
+        IsDrawerOpen = !IsDrawerOpen;
+    }
 }
