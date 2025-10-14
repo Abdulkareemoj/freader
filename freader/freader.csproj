@@ -5,7 +5,19 @@
     <LangVersion>latest</LangVersion>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
+
+<!-- Conditional compilation symbols  -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-android'">  
+    <DefineConstants>$(DefineConstants);MOBILE;ANDROID</DefineConstants>  
+</PropertyGroup>  
   
+<PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-ios'">  
+    <DefineConstants>$(DefineConstants);MOBILE;IOS</DefineConstants>  
+</PropertyGroup>  
+  
+<PropertyGroup Condition="'$(TargetFramework)' == 'net9.0'">  
+    <DefineConstants>$(DefineConstants);DESKTOP</DefineConstants>  
+</PropertyGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
@@ -24,4 +36,10 @@
     <PackageReference Include="LucideAvalonia" />
     <PackageReference Include="ShadUI" />
   </ItemGroup>
+
+<!-- For different layout builds   -->
+  <ItemGroup>  
+    <AvaloniaResource Include="Views\MainWindow.axaml" Condition="'$(DefineConstants.Contains(DESKTOP))' == 'true'" />  
+    <AvaloniaResource Include="Views\MainWindow.Mobile.axaml" Condition="'$(DefineConstants.Contains(MOBILE))' == 'true'" />  
+</ItemGroup>
 </Project>
