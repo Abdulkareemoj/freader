@@ -2,39 +2,25 @@
 
 namespace freader.ViewModels;
 
-using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
-
-
 public partial class MainViewModel : ViewModelBase
 {
-    [ObservableProperty]
-    private ViewModelBase _currentPage;
+    // This is your HOME/DASHBOARD page  
+    // Remove NavigationItems and nested navigation  
 
     [ObservableProperty]
-    private NavigationItemViewModel? _selectedNavigationItem;
+    private string _welcomeMessage = "Welcome to freader!";
 
-    public ObservableCollection<NavigationItemViewModel> NavigationItems { get; }
+    // Add home page specific properties here  
+    [ObservableProperty]
+    private int _totalBooks;
+
+    [ObservableProperty]
+    private int _booksReadThisMonth;
 
     public MainViewModel()
     {
-        NavigationItems = new ObservableCollection<NavigationItemViewModel>
-        {
-            new("Library", new LibraryViewModel()),
-            new("Discover", new DiscoverViewModel()),
-            new("Collections", new CollectionsViewModel()),
-            new("Settings", new SettingsViewModel()),
-        };
-
-        _selectedNavigationItem = NavigationItems[0];
-        _currentPage = _selectedNavigationItem.Page;
-    }
-
-    partial void OnSelectedNavigationItemChanged(NavigationItemViewModel? value)
-    {
-        if (value is not null)
-        {
-            CurrentPage = value.Page;
-        }
+        // Initialize home page data  
+        _totalBooks = 0;
+        _booksReadThisMonth = 0;
     }
 }
