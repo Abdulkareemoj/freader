@@ -1,9 +1,34 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="freader.Views.SettingsView"
-             Padding="16">
-    <Grid>
-        <TextBlock Text="Your Settings" FontSize="24" FontWeight="Bold"/>
-        <!-- Placeholder for list of books -->
-    </Grid>
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:shadui="clr-namespace:ShadUI;assembly=ShadUI"
+    xmlns:vm="using:freader.ViewModels"
+    x:Class="freader.Views.SettingsView"
+    x:DataType="vm:SettingsViewModel">
+
+  <ScrollViewer Padding="24">
+    <StackPanel Spacing="24">
+      <TextBlock Text="Settings" FontSize="24" FontWeight="SemiBold" />
+
+      <!-- Theme Section -->
+      <shadui:Card>
+        <StackPanel Spacing="16">
+          <TextBlock Text="Appearance" FontSize="18" FontWeight="SemiBold" />
+          <TextBlock Text="Choose your preferred theme mode" Opacity="0.7" />
+
+          <Button
+              Content="{Binding CurrentTheme}"
+              Command="{Binding SwitchThemeCommand}"
+              HorizontalAlignment="Left" />
+
+          <TextBlock
+              Text="Click to cycle: System → Light → Dark → System"
+              FontSize="12"
+              Opacity="0.6" />
+        </StackPanel>
+      </shadui:Card>
+
+      <!-- Other settings sections can go here -->
+    </StackPanel>
+  </ScrollViewer>
 </UserControl>

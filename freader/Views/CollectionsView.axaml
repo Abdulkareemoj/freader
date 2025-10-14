@@ -1,9 +1,18 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="freader.Views.CollectionsView"
-             Padding="16">
-    <Grid>
-        <TextBlock Text="Your Collection" FontSize="24" FontWeight="Bold"/>
-        <!-- Placeholder for list of books -->
-    </Grid>
+<UserControl
+  x:Class="freader.Views.CollectionsView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:shadui="clr-namespace:ShadUI;assembly=ShadUI"
+  xmlns:vm="using:freader.ViewModels"
+  x:DataType="vm:CollectionsViewModel">
+
+  <ScrollViewer Padding="16">
+    <StackPanel Spacing="16">
+      <TextBlock
+        FontSize="20"
+        FontWeight="Bold"
+        Text="Your Collections" />
+      <TextBlock Text="Group your books into personalized collections." />
+    </StackPanel>
+  </ScrollViewer>
 </UserControl>
