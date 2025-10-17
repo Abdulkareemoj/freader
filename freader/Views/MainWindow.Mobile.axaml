@@ -1,5 +1,5 @@
 <shadui:Window
-    x:Class="freader.Views.MainWindow"
+    x:Class="freader.Views.MainWindowMobile"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:freader.Assets"
@@ -16,16 +16,16 @@
             BorderBrush="{DynamicResource BorderColor30}"
             BorderThickness="0,0,0,1">
             <Grid ColumnDefinitions="Auto * Auto">
-                <Button
+                <!-- <Button
                     Grid.Column="0"
                     Background="Transparent"
                     Command="{Binding ToggleDrawerCommand}">
                     <PathIcon
                         Width="20"
                         Height="20"
-                        Data="{x:Static shadui:Icons.Menu}"
+                        Data="{x:Static local:Icons.Menu}"
                         Foreground="{DynamicResource ForegroundColor}" />
-                </Button>
+                </Button>-->
                 <TextBlock
                     Grid.Column="1"
                     HorizontalAlignment="Center"
@@ -76,6 +76,7 @@
                             </StackPanel>
                         </Button>
 
+
                         <!--  Add other navigation items  -->
                     </StackPanel>
                 </Border>
@@ -118,6 +119,31 @@
                             Data="{x:Static local:Icons.Library}"
                             Foreground="{DynamicResource ForegroundColor}" />
                         <TextBlock FontSize="10" Text="Library" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    HorizontalAlignment="Stretch"
+                    Classes="Secondary"
+                    Command="{Binding OpenDiscoverCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <PathIcon
+                            Width="20"
+                            Height="20"
+                            Data="{x:Static local:Icons.Discover}" />
+                        <TextBlock Text="Discover" />
+                    </StackPanel>
+                </Button>
+
+                <Button
+                    HorizontalAlignment="Stretch"
+                    Classes="Secondary"
+                    Command="{Binding OpenCollectionsCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <PathIcon
+                            Width="20"
+                            Height="20"
+                            Data="{x:Static local:Icons.Collections}" />
+                        <TextBlock Text="Collection" />
                     </StackPanel>
                 </Button>
 

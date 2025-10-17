@@ -2,9 +2,9 @@ using Avalonia.Markup.Xaml;
 
 namespace freader.Views;
 
-public partial class MainWindow : ShadUI.Window
+public partial class MainWindowMobile : ShadUI.Window
 {
-    public MainWindow()
+    public MainWindowMobile()
     {
         InitializeComponent();
     }

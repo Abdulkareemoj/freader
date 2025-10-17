@@ -54,50 +54,50 @@
                 <shadui:SidebarItem
                     Command="{Binding OpenHomeCommand}"
                     Content="Home"
-                    Route="home"> 
-                    <shadui:SidebarItem.Icon> 
+                    Route="home">
+                    <shadui:SidebarItem.Icon>
                         <PathIcon
                             Width="16"
                             Height="16"
                             Data="{x:Static local:Icons.Home}"
-                            Foreground="{DynamicResource ForegroundColor}" /> 
-                    </shadui:SidebarItem.Icon> 
-                </shadui:SidebarItem> 
+                            Foreground="{DynamicResource ForegroundColor}" />
+                    </shadui:SidebarItem.Icon>
+                </shadui:SidebarItem>
                 <shadui:SidebarItem
                     Command="{Binding OpenLibraryCommand}"
                     Content="Library"
-                    Route="library"> 
-                    <shadui:SidebarItem.Icon> 
+                    Route="library">
+                    <shadui:SidebarItem.Icon>
                         <PathIcon
                             Width="16"
                             Height="16"
                             Data="{x:Static local:Icons.Library}"
-                            Foreground="{DynamicResource ForegroundColor}" /> 
-                    </shadui:SidebarItem.Icon> 
-                </shadui:SidebarItem> 
+                            Foreground="{DynamicResource ForegroundColor}" />
+                    </shadui:SidebarItem.Icon>
+                </shadui:SidebarItem>
                 <shadui:SidebarItem
                     Command="{Binding OpenDiscoverCommand}"
                     Content="Discover"
-                    Route="discover"> 
-                    <shadui:SidebarItem.Icon> 
+                    Route="discover">
+                    <shadui:SidebarItem.Icon>
                         <PathIcon
                             Width="16"
                             Height="16"
                             Data="{x:Static local:Icons.Discover}"
-                            Foreground="{DynamicResource ForegroundColor}" /> 
-                    </shadui:SidebarItem.Icon> 
-                </shadui:SidebarItem> 
+                            Foreground="{DynamicResource ForegroundColor}" />
+                    </shadui:SidebarItem.Icon>
+                </shadui:SidebarItem>
                 <shadui:SidebarItem
                     Command="{Binding OpenCollectionsCommand}"
                     Content="Collections"
-                    Route="collections"> 
-                    <shadui:SidebarItem.Icon> 
+                    Route="collections">
+                    <shadui:SidebarItem.Icon>
                         <PathIcon
                             Width="16"
                             Height="16"
                             Data="{x:Static local:Icons.Collections}"
-                            Foreground="{DynamicResource ForegroundColor}" /> 
-                    </shadui:SidebarItem.Icon> 
+                            Foreground="{DynamicResource ForegroundColor}" />
+                    </shadui:SidebarItem.Icon>
                 </shadui:SidebarItem>
             </StackPanel>
 
@@ -171,7 +171,7 @@
                                 <TextBlock FontWeight="SemiBold" Text="Recent Activity" />
                                 <Button
                                     Grid.Column="1"
-                                    Padding=""
+                                    Padding="4"
                                     Classes="Secondary"
                                     Content="View All →" />
                             </Grid>
@@ -180,6 +180,6 @@
                     </shadui:Card>
                 </StackPanel>
             </ScrollViewer>
-        </Border>    
+        </Border>
     </Grid>
 </shadui:Window>

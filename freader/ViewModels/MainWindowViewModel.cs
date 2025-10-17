@@ -27,13 +27,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     // Single constructor with ALL dependencies  
     public MainWindowViewModel(
-          ThemeWatcher themeWatcher,
-           MainViewModel mainViewModel,
+        ThemeWatcher themeWatcher,
+        MainViewModel mainViewModel,
         LibraryViewModel libraryViewModel,
         DiscoverViewModel discoverViewModel,
         CollectionsViewModel collectionsViewModel,
         SettingsViewModel settingsViewModel
-     )
+)
     {
         _themeWatcher = themeWatcher;
         _mainViewModel = mainViewModel;
@@ -41,7 +41,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _discoverViewModel = discoverViewModel;
         _collectionsViewModel = collectionsViewModel;
         _settingsViewModel = settingsViewModel;
-
     }
 
     public void Initialize()
