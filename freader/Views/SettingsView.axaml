@@ -11,22 +11,19 @@
       <TextBlock Text="Settings" FontSize="24" FontWeight="SemiBold" />
 
       <!-- Theme Section -->
-      <shadui:Card>
-        <StackPanel Spacing="16">
-          <TextBlock Text="Appearance" FontSize="18" FontWeight="SemiBold" />
-          <TextBlock Text="Choose your preferred theme mode" Opacity="0.7" />
-
-          <Button
-              Content="{Binding CurrentTheme}"
-              Command="{Binding SwitchThemeCommand}"
-              HorizontalAlignment="Left" />
-
-          <TextBlock
-              Text="Click to cycle: System → Light → Dark → System"
-              FontSize="12"
-              Opacity="0.6" />
-        </StackPanel>
-      </shadui:Card>
+   <shadui:Card>  
+  <StackPanel Spacing="16">  
+    <TextBlock Text="Appearance" FontSize="18" FontWeight="SemiBold" />  
+    <TextBlock Text="Choose your preferred theme mode" Opacity="0.7" />  
+  
+    <ComboBox  
+   HorizontalAlignment="Left"
+        Width="225"  
+        shadui:ControlAssist.Label="Theme Mode"  
+        ItemsSource="{Binding ThemeModes}"  
+        SelectedItem="{Binding CurrentTheme}" />  
+  </StackPanel>  
+</shadui:Card>
 
       <!-- Other settings sections can go here -->
     </StackPanel>
