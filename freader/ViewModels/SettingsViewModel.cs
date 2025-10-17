@@ -1,32 +1,32 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ShadUI;
+using System.Collections.ObjectModel;
 
 namespace freader.ViewModels;
 
-public sealed partial class SettingsViewModel : ViewModelBase
+public partial class SettingsViewModel : ViewModelBase
 {
     private readonly ThemeWatcher _themeWatcher;
-
-    [ObservableProperty]
-    private ThemeMode _currentTheme = ThemeMode.System;
 
     public SettingsViewModel(ThemeWatcher themeWatcher)
     {
         _themeWatcher = themeWatcher;
-        CurrentTheme = ThemeMode.System; // Initialize with system theme  
+        _currentTheme = ThemeMode.System;
     }
 
-    [RelayCommand]
-    private void SwitchTheme()
+    public ObservableCollection<ThemeMode> ThemeModes { get; } = new()
     {
-        CurrentTheme = CurrentTheme switch
-        {
-            ThemeMode.System => ThemeMode.Light,
-            ThemeMode.Light => ThemeMode.Dark,
-            _ => ThemeMode.System
-        };
+        ThemeMode.System,
+        ThemeMode.Light,
+        ThemeMode.Dark
+    };
 
-        _themeWatcher.SwitchTheme(CurrentTheme);
+    [ObservableProperty]
+    private ThemeMode _currentTheme;
+
+    partial void OnCurrentThemeChanged(ThemeMode value)
+    {
+        _themeWatcher.SwitchTheme(value);
     }
 }
