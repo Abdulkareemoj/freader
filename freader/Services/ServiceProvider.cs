@@ -6,7 +6,7 @@ using Avalonia;
 namespace freader.Services;
 
 [ServiceProvider]
-[Singleton(typeof(ThemeWatcher), Factory = nameof(ThemeWatcherFactory))]
+[Singleton<ThemeWatcher>(Factory = nameof(ThemeWatcherFactory))]
 [Transient<MainWindowViewModel>]
 [Transient<MainViewModel>]
 [Transient<LibraryViewModel>]
