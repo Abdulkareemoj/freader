@@ -19,7 +19,6 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
     }
     private static Mutex? _appMutex;
-
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -40,16 +39,26 @@ public partial class App : Application
             var viewModel = provider.GetService<MainWindowViewModel>();
             viewModel.Initialize();
 
+            // Create the appropriate window based on platform  
+#if MOBILE
+        var mainWindow = new MainWindowMobile { DataContext = viewModel };  
+#else
             var mainWindow = new MainWindow { DataContext = viewModel };
+#endif
             this.RegisterTrayIconsEvents(mainWindow, viewModel);
 
-            desktop.MainWindow = mainWindow;  // Use the mainWindow you just created!  
+            desktop.MainWindow = mainWindow;
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
-            singleViewPlatform.MainView = new MainView
+            // For single-view (mobile) platforms, reuse the MainWindowViewModel and MobileShell
+            var provider = new Services.ServiceProvider();
+            var viewModel = provider.GetService<MainWindowViewModel>();
+            viewModel.Initialize();
+
+            singleViewPlatform.MainView = new MobileShell
             {
-                DataContext = new MainViewModel()
+                DataContext = viewModel
             };
         }
 
@@ -69,3 +78,4 @@ public partial class App : Application
     }
 
 }
+
