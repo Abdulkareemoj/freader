@@ -13,7 +13,10 @@ namespace freader.Services;
 [Transient<DiscoverViewModel>]
 [Transient<CollectionsViewModel>]
 [Transient<SettingsViewModel>]
+[Transient<AboutViewModel>]
+[Transient<ExportViewModel>]
 [Transient<ReaderViewModel>]
+[Transient<FileService>]
 [Transient<ReaderToolbarViewModel>]
 
 public partial class ServiceProvider
