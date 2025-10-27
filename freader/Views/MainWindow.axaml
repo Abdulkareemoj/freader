@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:converters="clr-namespace:freader.Converters"
     xmlns:local="clr-namespace:freader.Assets"
+    xmlns:materialIcons="using:Material.Icons.Avalonia"
     xmlns:shadui="clr-namespace:ShadUI;assembly=ShadUI"
     xmlns:views="clr-namespace:freader.Views"
     xmlns:vm="using:freader.ViewModels"
@@ -56,11 +57,10 @@
                     Content="Home"
                     Route="home">
                     <shadui:SidebarItem.Icon>
-                        <PathIcon
-                            Width="16"
-                            Height="16"
-                            Data="{x:Static local:Icons.Home}"
-                            Foreground="{DynamicResource ForegroundColor}" />
+                        <materialIcons:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Kind="Home" />
                     </shadui:SidebarItem.Icon>
                 </shadui:SidebarItem>
                 <shadui:SidebarItem
@@ -68,11 +68,10 @@
                     Content="Library"
                     Route="library">
                     <shadui:SidebarItem.Icon>
-                        <PathIcon
-                            Width="16"
-                            Height="16"
-                            Data="{x:Static local:Icons.Library}"
-                            Foreground="{DynamicResource ForegroundColor}" />
+                        <materialIcons:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Kind="LibraryShelves" />
                     </shadui:SidebarItem.Icon>
                 </shadui:SidebarItem>
                 <shadui:SidebarItem
@@ -80,11 +79,10 @@
                     Content="Discover"
                     Route="discover">
                     <shadui:SidebarItem.Icon>
-                        <PathIcon
-                            Width="16"
-                            Height="16"
-                            Data="{x:Static local:Icons.Discover}"
-                            Foreground="{DynamicResource ForegroundColor}" />
+                        <materialIcons:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Kind="Telescope" />
                     </shadui:SidebarItem.Icon>
                 </shadui:SidebarItem>
                 <shadui:SidebarItem
@@ -92,11 +90,10 @@
                     Content="Collections"
                     Route="collections">
                     <shadui:SidebarItem.Icon>
-                        <PathIcon
-                            Width="16"
-                            Height="16"
-                            Data="{x:Static local:Icons.Collections}"
-                            Foreground="{DynamicResource ForegroundColor}" />
+                        <materialIcons:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Kind="BookmarkBoxMultiple" />
                     </shadui:SidebarItem.Icon>
                 </shadui:SidebarItem>
             </StackPanel>
@@ -104,17 +101,30 @@
 
             <!--  Sidebar Footer  -->
             <shadui:Sidebar.Footer>
-                <shadui:SidebarItem
-                    Command="{Binding OpenSettingsCommand}"
-                    Content="Settings"
-                    Route="settings">
-                    <shadui:SidebarItem.Icon>
-                        <PathIcon
-                            Width="16"
-                            Height="16"
-                            Data="{x:Static local:Icons.Settings}" />
-                    </shadui:SidebarItem.Icon>
-                </shadui:SidebarItem>
+                <StackPanel Spacing="4">
+                    <shadui:SidebarItem
+                        Command="{Binding OpenSettingsCommand}"
+                        Content="Settings"
+                        Route="settings">
+                        <shadui:SidebarItem.Icon>
+                            <materialIcons:MaterialIcon
+                                Width="20"
+                                Height="20"
+                                Kind="Gear" />
+                        </shadui:SidebarItem.Icon>
+                    </shadui:SidebarItem>
+                    <shadui:SidebarItem
+                        Command="{Binding OpenAboutCommand}"
+                        Content="About"
+                        Route="about">
+                        <shadui:SidebarItem.Icon>
+                            <materialIcons:MaterialIcon
+                                Width="20"
+                                Height="20"
+                                Kind="Info" />
+                        </shadui:SidebarItem.Icon>
+                    </shadui:SidebarItem> 
+                </StackPanel>
             </shadui:Sidebar.Footer>
         </shadui:Sidebar>
 
@@ -167,14 +177,12 @@
                     <!--  Recent Activity  -->
                     <shadui:Card>
                         <StackPanel Spacing="12">
-                            <Grid ColumnDefinitions="* Auto">
-                                <TextBlock FontWeight="SemiBold" Text="Recent Activity" />
-                                <Button
-                                    Grid.Column="1"
-                                    Padding="4"
-                                    Classes="Secondary"
-                                    Content="View All →" />
-                            </Grid>
+                            <TextBlock FontWeight="SemiBold" Text="Recent Activity" />
+                            <Button
+                                Grid.Column="1"
+                                Padding="4"
+                                Classes="Secondary"
+                                Content="View All →" />
                             <!--  Activity items here  -->
                         </StackPanel>
                     </shadui:Card>

@@ -1,0 +1,261 @@
+<UserControl
+    x:Class="freader.Views.MobileShell"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="clr-namespace:freader.Converters"
+    xmlns:local="clr-namespace:freader.Assets"
+    xmlns:materialIcons="using:Material.Icons.Avalonia"
+    xmlns:shadui="clr-namespace:ShadUI;assembly=ShadUI"
+    xmlns:vm="using:freader.ViewModels"
+    x:DataType="vm:MainWindowViewModel">
+
+    <UserControl.Resources>
+        <conv:RouteEqualsConverter x:Key="RouteEqualsConverter" />
+        <conv:RouteEqualsBoolConverter x:Key="RouteEqualsBoolConverter" />
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto * Auto">
+        <!--  Top App Bar  -->
+        <Border
+            Grid.Row="0"
+            Padding="12"
+            Background="{DynamicResource SidebarBackgroundColor}"
+            BorderBrush="{DynamicResource BorderColor30}"
+            BorderThickness="0,0,0,1">
+            <Grid VerticalAlignment="Center" ColumnDefinitions="Auto * Auto">
+                <!--  Drawer toggle (left)  -->
+                <Button
+                    Grid.Column="0"
+                    AutomationProperties.Name="Open navigation drawer"
+                    Background="Transparent"
+                    Command="{Binding ToggleDrawerCommand}">
+                    <materialIcons:MaterialIcon
+                        Width="20"
+                        Height="20"
+                        Kind="PageLayoutSidebarLeft" />
+                </Button>
+
+                <!--  Title (center) + Back button behavior  -->
+                <Grid Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button
+                        Grid.Column="0"
+                        Background="Transparent"
+                        Command="{Binding BackCommand}"
+                        IsVisible="{Binding CanGoBack}">
+                        <PathIcon
+                            Width="18"
+                            Height="18"
+                            Data="M15,18L9,12L15,6" />
+                    </Button>
+
+                    <TextBlock
+                        Grid.Column="1"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="freader" />
+                </Grid>
+
+                <!--  Right area reserved (no app actions)  -->
+                <StackPanel
+                    Grid.Column="2"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal" />
+            </Grid>
+        </Border>
+
+        <!--  Main Content with Drawer  -->
+        <SplitView
+            Grid.Row="1"
+            CompactPaneLength="0"
+            DisplayMode="CompactOverlay"
+            IsPaneOpen="{Binding IsDrawerOpen}"
+            OpenPaneLength="280">
+
+            <!--  Navigation Drawer  -->
+            <SplitView.Pane>
+                <Border Background="{DynamicResource SidebarBackgroundColor}">
+                    <DockPanel LastChildFill="True">
+                        <StackPanel
+                            Margin="16"
+                            DockPanel.Dock="Top"
+                            Spacing="8">
+
+
+                            <Button
+                                HorizontalAlignment="Stretch"
+                                Classes="Secondary"
+                                Command="{Binding ImportCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <materialIcons:MaterialIcon
+                                        Width="20"
+                                        Height="20"
+                                        Kind="Import" />
+                                    <TextBlock Text="Import" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button
+                                HorizontalAlignment="Stretch"
+                                Classes="Secondary"
+                                Command="{Binding OpenExportMobileCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <materialIcons:MaterialIcon
+                                        Width="20"
+                                        Height="20"
+                                        Kind="Export" />
+                                    <TextBlock Text="Export Data" />
+                                </StackPanel>
+                            </Button>
+
+                        </StackPanel>
+
+                        <!--  Footer with Settings and About  -->
+                        <StackPanel
+                            Margin="16"
+                            DockPanel.Dock="Bottom"
+                            Spacing="8">
+                            <Button
+                                HorizontalAlignment="Stretch"
+                                Classes="Secondary"
+                                Command="{Binding OpenSettingsCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <materialIcons:MaterialIcon
+                                        Width="20"
+                                        Height="20"
+                                        Kind="Gear" />
+                                    <TextBlock Text="Settings" />
+                                </StackPanel>
+                            </Button>
+
+                            <Button
+                                HorizontalAlignment="Stretch"
+                                Classes="Secondary"
+                                Command="{Binding OpenAboutMobileCommand}">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <materialIcons:MaterialIcon
+                                        Width="20"
+                                        Height="20"
+                                        Kind="Info" />
+                                    <TextBlock Text="About" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+            </SplitView.Pane>
+
+            <!--  Content Area  -->
+            <TransitioningContentControl Content="{Binding SelectedPage}" />
+        </SplitView>
+
+        <!--  Bottom Navigation Bar  -->
+        <Border
+            Grid.Row="2"
+            Padding="8"
+            Background="{DynamicResource SidebarBackgroundColor}"
+            BorderBrush="{DynamicResource BorderColor30}"
+            BorderThickness="0,1,0,0">
+            <!--  Bottom navigation  -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="4" />
+                </Grid.RowDefinitions>
+
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Background="Transparent"
+                    Command="{Binding OpenHomeMobileCommand}">
+                    <StackPanel HorizontalAlignment="Center" Spacing="4">
+                        <materialIcons:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Kind="Home" />
+                        <TextBlock FontSize="10" Text="Home" />
+                    </StackPanel>
+                </Button>
+                <Rectangle
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Height="3"
+                    Fill="{DynamicResource PrimaryColor}"
+                    IsVisible="{Binding CurrentRoute, Converter={StaticResource RouteEqualsBoolConverter}, ConverterParameter=home}" />
+
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Background="Transparent"
+                    Command="{Binding OpenLibraryMobileCommand}">
+                    <StackPanel HorizontalAlignment="Center" Spacing="4">
+                        <materialIcons:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Kind="LibraryShelves" />
+                        <TextBlock FontSize="10" Text="Library" />
+                    </StackPanel>
+                </Button>
+                <Rectangle
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Height="3"
+                    Fill="{DynamicResource PrimaryColor}"
+                    IsVisible="{Binding CurrentRoute, Converter={StaticResource RouteEqualsBoolConverter}, ConverterParameter=library}" />
+
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Background="Transparent"
+                    Command="{Binding OpenCollectionsMobileCommand}">
+                    <StackPanel HorizontalAlignment="Center" Spacing="4">
+                        <materialIcons:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Kind="BookmarkBoxMultiple" />
+                        <TextBlock FontSize="10" Text="Collections" />
+                    </StackPanel>
+                </Button>
+                <Rectangle
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Height="3"
+                    Fill="{DynamicResource PrimaryColor}"
+                    IsVisible="{Binding CurrentRoute, Converter={StaticResource RouteEqualsBoolConverter}, ConverterParameter=collections}" />
+
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="3"
+                    Background="Transparent"
+                    Command="{Binding OpenDiscoverMobileCommand}">
+                    <StackPanel HorizontalAlignment="Center" Spacing="4">
+                        <materialIcons:MaterialIcon
+                            Width="20"
+                            Height="20"
+                            Kind="Telescope" />
+                        <TextBlock FontSize="10" Text="Discover" />
+                    </StackPanel>
+                </Button>
+                <Rectangle
+                    Grid.Row="1"
+                    Grid.Column="3"
+                    Height="3"
+                    Fill="{DynamicResource PrimaryColor}"
+                    IsVisible="{Binding CurrentRoute, Converter={StaticResource RouteEqualsBoolConverter}, ConverterParameter=discover}" />
+                <!--  Add other bottom nav items  -->
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

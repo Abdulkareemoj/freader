@@ -2,153 +2,17 @@
     x:Class="freader.Views.MainWindowMobile"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="clr-namespace:freader.Assets"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:shadui="clr-namespace:ShadUI;assembly=ShadUI"
+    xmlns:views="clr-namespace:freader.Views"
     xmlns:vm="using:freader.ViewModels"
-    x:DataType="vm:MainWindowViewModel">
+    Title="freader"
+    d:DesignHeight="852"
+    d:DesignWidth="393"
+    x:DataType="vm:MainWindowViewModel"
+    mc:Ignorable="d">
 
-    <Grid RowDefinitions="Auto * Auto">
-        <!--  Top App Bar  -->
-        <Border
-            Grid.Row="0"
-            Padding="16,12"
-            Background="{DynamicResource SidebarBackgroundColor}"
-            BorderBrush="{DynamicResource BorderColor30}"
-            BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto * Auto">
-                <!-- <Button
-                    Grid.Column="0"
-                    Background="Transparent"
-                    Command="{Binding ToggleDrawerCommand}">
-                    <PathIcon
-                        Width="20"
-                        Height="20"
-                        Data="{x:Static local:Icons.Menu}"
-                        Foreground="{DynamicResource ForegroundColor}" />
-                </Button>-->
-                <TextBlock
-                    Grid.Column="1"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="18"
-                    FontWeight="SemiBold"
-                    Text="freader" />
-            </Grid>
-        </Border>
+    <views:MobileShell />
 
-        <!--  Main Content with Drawer  -->
-        <SplitView
-            Grid.Row="1"
-            CompactPaneLength="0"
-            DisplayMode="CompactOverlay"
-            IsPaneOpen="{Binding IsDrawerOpen}"
-            OpenPaneLength="280">
-
-            <!--  Navigation Drawer  -->
-            <SplitView.Pane>
-                <Border Background="{DynamicResource SidebarBackgroundColor}">
-                    <StackPanel Margin="16" Spacing="8">
-                        <Button
-                            HorizontalAlignment="Stretch"
-                            Classes="Secondary"
-                            Command="{Binding OpenHomeCommand}">
-                            <StackPanel Orientation="Horizontal" Spacing="12">
-                                <PathIcon
-                                    Width="20"
-                                    Height="20"
-                                    Data="{x:Static local:Icons.Home}"
-                                    Foreground="{DynamicResource ForegroundColor}" />
-                                <TextBlock Text="Home" />
-                            </StackPanel>
-                        </Button>
-
-                        <Button
-                            HorizontalAlignment="Stretch"
-                            Classes="Secondary"
-                            Command="{Binding OpenLibraryCommand}">
-                            <StackPanel Orientation="Horizontal" Spacing="12">
-                                <PathIcon
-                                    Width="20"
-                                    Height="20"
-                                    Data="{x:Static local:Icons.Library}"
-                                    Foreground="{DynamicResource ForegroundColor}" />
-                                <TextBlock Text="Library" />
-                            </StackPanel>
-                        </Button>
-
-
-                        <!--  Add other navigation items  -->
-                    </StackPanel>
-                </Border>
-            </SplitView.Pane>
-
-            <!--  Content Area  -->
-            <TransitioningContentControl Content="{Binding SelectedPage}" />
-        </SplitView>
-
-        <!--  Bottom Navigation Bar  -->
-        <Border
-            Grid.Row="2"
-            Padding="8"
-            Background="{DynamicResource SidebarBackgroundColor}"
-            BorderBrush="{DynamicResource BorderColor30}"
-            BorderThickness="0,1,0,0">
-            <Grid ColumnDefinitions="* * * *">
-                <Button
-                    Grid.Column="0"
-                    Background="Transparent"
-                    Command="{Binding OpenHomeCommand}">
-                    <StackPanel Spacing="4">
-                        <PathIcon
-                            Width="24"
-                            Height="24"
-                            Data="{x:Static local:Icons.Home}"
-                            Foreground="{DynamicResource ForegroundColor}" />
-                        <TextBlock FontSize="10" Text="Home" />
-                    </StackPanel>
-                </Button>
-
-                <Button
-                    Grid.Column="1"
-                    Background="Transparent"
-                    Command="{Binding OpenLibraryCommand}">
-                    <StackPanel Spacing="4">
-                        <PathIcon
-                            Width="24"
-                            Height="24"
-                            Data="{x:Static local:Icons.Library}"
-                            Foreground="{DynamicResource ForegroundColor}" />
-                        <TextBlock FontSize="10" Text="Library" />
-                    </StackPanel>
-                </Button>
-                <Button
-                    HorizontalAlignment="Stretch"
-                    Classes="Secondary"
-                    Command="{Binding OpenDiscoverCommand}">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <PathIcon
-                            Width="20"
-                            Height="20"
-                            Data="{x:Static local:Icons.Discover}" />
-                        <TextBlock Text="Discover" />
-                    </StackPanel>
-                </Button>
-
-                <Button
-                    HorizontalAlignment="Stretch"
-                    Classes="Secondary"
-                    Command="{Binding OpenCollectionsCommand}">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <PathIcon
-                            Width="20"
-                            Height="20"
-                            Data="{x:Static local:Icons.Collections}" />
-                        <TextBlock Text="Collection" />
-                    </StackPanel>
-                </Button>
-
-                <!--  Add other bottom nav items  -->
-            </Grid>
-        </Border>
-    </Grid>
 </shadui:Window>
