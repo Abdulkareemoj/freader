@@ -44,9 +44,8 @@ public partial class App : Application
         var mainWindow = new MainWindowMobile { DataContext = viewModel };  
 #else
             var mainWindow = new MainWindow { DataContext = viewModel };
-#endif
             this.RegisterTrayIconsEvents(mainWindow, viewModel);
-
+#endif
             desktop.MainWindow = mainWindow;
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)

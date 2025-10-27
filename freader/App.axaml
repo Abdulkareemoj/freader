@@ -1,27 +1,29 @@
-<Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="using:freader"
-             x:Class="freader.App"
-              xmlns:themes="clr-namespace:ShadUI;assembly=ShadUI"
-             RequestedThemeVariant="Light">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+<Application
+    x:Class="freader.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:freader"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:themes="clr-namespace:ShadUI;assembly=ShadUI"
+    RequestedThemeVariant="Light">
+    <!--  "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options.  -->
 
-  <Application.Resources>  
-        <ResourceDictionary>  
-            <ResourceDictionary.ThemeDictionaries>  
-                <ResourceInclude x:Key="Light" Source="avares://ShadUI/Themes/Light.axaml" />  
-                <ResourceInclude x:Key="Dark" Source="avares://ShadUI/Themes/Dark.axaml" />  
-            </ResourceDictionary.ThemeDictionaries>  
-        </ResourceDictionary>  
-        <!-- Your font resources here -->
-   <FontFamily x:Key="LucideIcon">avares://freader/Assets/Fonts#lucide</FontFamily>
-  </Application.Resources>  
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceInclude x:Key="Light" Source="avares://ShadUI/Themes/Light.axaml" />
+                <ResourceInclude x:Key="Dark" Source="avares://ShadUI/Themes/Dark.axaml" />
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+        <!--  Your font resources here  -->
+        <FontFamily x:Key="LucideIcon">avares://freader/Assets/Fonts#lucide</FontFamily>
+    </Application.Resources>
 
     <Application.DataTemplates>
-        <local:ViewLocator/>
+        <local:ViewLocator />
     </Application.DataTemplates>
-
     <Application.Styles>
-      <themes:ShadTheme />
+        <materialIcons:MaterialIconStyles />
+        <themes:ShadTheme />
     </Application.Styles>
 </Application>
