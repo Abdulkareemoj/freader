@@ -1,0 +1,48 @@
+CREATE TABLE BookEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    author TEXT,
+    format TEXT NOT NULL,
+    filePath TEXT NOT NULL,
+    coverPath TEXT,
+    seriesName TEXT,
+    volumeNumber INTEGER,
+    addedAt INTEGER NOT NULL,
+    lastReadAt INTEGER,
+    progress REAL NOT NULL DEFAULT 0
+);
+
+selectAllBooks:
+SELECT * FROM BookEntity ORDER BY addedAt DESC;
+
+selectBookById:
+SELECT * FROM BookEntity WHERE id = ?;
+
+insertBook:
+INSERT OR REPLACE INTO BookEntity(id, title, author, format, filePath, coverPath, seriesName, volumeNumber, addedAt, lastReadAt, progress)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateProgress:
+UPDATE BookEntity SET progress = ?, lastReadAt = ? WHERE id = ?;
+
+deleteBook:
+DELETE FROM BookEntity WHERE id = ?;
+
+CREATE TABLE BookmarkEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    bookId TEXT NOT NULL,
+    location TEXT NOT NULL,
+    label TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    FOREIGN KEY(bookId) REFERENCES BookEntity(id) ON DELETE CASCADE
+);
+
+selectAllBookmarks:
+SELECT * FROM BookmarkEntity WHERE bookId = ? ORDER BY createdAt DESC;
+
+insertBookmark:
+INSERT OR REPLACE INTO BookmarkEntity(id, bookId, location, label, createdAt)
+VALUES (?, ?, ?, ?, ?);
+
+deleteBookmark:
+DELETE FROM BookmarkEntity WHERE id = ?;
