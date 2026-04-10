@@ -66,6 +66,9 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
 }
+dependencies {
+    implementation(libs.kotlinx.coroutinesSwing)
+}
 
 sqldelight {
     databases {
