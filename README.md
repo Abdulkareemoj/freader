@@ -1,45 +1,39 @@
 # Freader
 
-Freader is an open-source ebook and audiobook(wip) reader built with **Kotlin Multiplatform (KMP)** and **Compose Multiplatform**. It features a modern, clean Material 3 design, delivering a seamless reading and listening experience across Android, Desktop (JVM), and iOS.
+Freader is an open-source ebook and audiobook reader built with **Kotlin Multiplatform (KMP)** and **Compose Multiplatform**. It features a modern, clean Material 3 design, delivering a seamless reading and listening experience across Android, Desktop (JVM), and iOS.
 
-## 🚀 Key Achievements (Current State)
+## 🚀 Key Achievements
 
 ### 📱 Fully Immersive UI & Navigation
-- **Navigation Shell**: A robust architecture using **Voyager** for screen-based navigation. Features an adaptive layout (Mobile Drawer/Tabs vs. Desktop Sidebar).
-- **Simplified Experience**: A beautiful, interactive **Onboarding** flow that introduces the app's core capabilities.
-- **Familiar Screens**:
-    - **Home**: Trending book carousel and recent reading history.
-    - **Library**: Adaptive grid view with powerful **Sort & Filter** sheets.
-    - **Collections**: Folder-based organization for your media.
-    - **Discover**: Immersive import and processing flow for new books.
-- **Immersive Sub-pages**:
-    - **Reader**: Distraction-free reading with a context-aware **Selection Toolbar**, font/theme controls, and Table of Contents navigation.
-    - **Comic Reader**: Specialized UI for **CBZ/CBR** formats, featuring Manga Mode (RTL support) and automatic chapter/volume transitions.
-    - **TTS Player**: Podcast-inspired audio player interface.
-    - **Metadata Editor**: Edit title, author, description, and genre tags for any book.
-    - **Reading Stats**: Visual insights into reading progress, activity charts, and achievements.
+- **Navigation Shell**: A robust architecture using **Voyager** for screen-based navigation with adaptive layouts.
+- **Library & Reader**: Includes specialized support for PDF, EPUB, MOBI, and Comic formats with an adaptive UI.
+- **Immersive Experiences**: Distraction-free reader, comic viewer, and robust tag/metadata management.
 
 ### 💾 Persistence Layer
-- **SQLDelight Integration**: Fully integrated cross-platform database (`FreaderDatabase`) to persist library state, bookmarks, and reading progress across app restarts.
-- **Reactive Architecture**: Uses `Flow` and `ViewModel` (ScreenModels) to ensure the UI stays in sync with the database at all times.
+- **SQLDelight Integration**: Cross-platform database to persist library state, bookmarks, and reading progress.
 
 ## 🛠 Tech Stack
 - **Framework**: Compose Multiplatform
 - **Navigation**: Voyager
-- **Design System**: Material 3 (with custom theming & adaptive layouts)
+- **Design System**: Material 3
 - **Persistence**: SQLDelight (KMP)
 - **Concurrency**: Kotlin Coroutines & Flow
-- **Build System**: Gradle with Version Catalogs
+- **Build System**: Gradle with Version Catalogs (Modern KMP structure)
+
+## 🏗 Project Structure
+The project follows the modern **KMP + Android Application** structure:
+- `:androidApp`: Pure Android application module (Entry point for Android).
+- `:composeApp`: Pure Kotlin Multiplatform library module containing common UI and core logic.
+- `:shared`: Core business logic and domain models shared across all platforms.
 
 ## 🚦 Getting Started
 1. **Sync Gradle**: Open in Android Studio and sync with Gradle.
-2. **Database**: The app initializes an SQLite database on the first run.
-3. **Run**: 
-   - Android: Select `composeApp` run configuration.
-   - Desktop: Run `./gradlew :composeApp:run`
+2. **Database**: The app automatically initializes the database on the first run.
+3. **Run**:
+   - **Android**: Run the `:androidApp` module.
+   - **Desktop**: Run `./gradlew :composeApp:run`.
 
-## 📝 Roadmap & Future Implementation
-- [ ] **Real Engine Integration**: Integrate PDF/EPUB parsers and image renderers.
-- [ ] **File I/O**: Implement platform-specific file system access (Android Scoped Storage / Desktop FileChooser).
-- [ ] **TTS Engine**: Bridge Android/iOS native TTS libraries.
-- [ ] **Cloud Sync**: Implement Google Drive/Dropbox sync logic.
+## 📝 Roadmap
+- [ ] **File I/O**: Refine cross-platform file access.
+- [ ] **TTS Engine**: Integrate platform-specific text-to-speech.
+- [ ] **Cloud Sync**: Implement drive-based synchronization.
