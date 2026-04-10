@@ -1,13 +1,10 @@
 plugins {
-    alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
 }
 
 kotlin {
-    androidTarget()
-    
     jvm("desktop")
 
     listOf(
@@ -40,42 +37,16 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.compose.core)
             implementation(libs.coil.mp)
-            implementation("io.insert-koin:koin-core:4.0.0")
-            implementation("io.insert-koin:koin-compose:4.0.0")
+            implementation(libs.koin.core.v421)
+            implementation(libs.koin.compose)
         }
-        androidMain.dependencies {
-            implementation(libs.androidx.activity.compose)
-            implementation(libs.coil.network.okhttp)
-            implementation("io.insert-koin:koin-android:4.0.0")
-            implementation(libs.commons.compress)
-        }
-        
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.commons.compress)
+                implementation(libs.kotlinx.coroutinesSwing)
             }
         }
-    }
-}
-
-android {
-    namespace = "com.wiztek.freader"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    
-    defaultConfig {
-        applicationId = "com.wiztek.freader"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
-    }
-    
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
     }
 }
 
