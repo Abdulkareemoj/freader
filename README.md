@@ -1,13 +1,13 @@
 # Freader
 
-Freader is a high-fidelity, open-source ebook and audiobook reader built with **Kotlin Multiplatform (KMP)** and **Compose Multiplatform**. It features a modern, clean Material 3 design, delivering a seamless reading and listening experience across Android, Desktop (JVM), and iOS.
+Freader is an open-source ebook and audiobook(wip) reader built with **Kotlin Multiplatform (KMP)** and **Compose Multiplatform**. It features a modern, clean Material 3 design, delivering a seamless reading and listening experience across Android, Desktop (JVM), and iOS.
 
 ## 🚀 Key Achievements (Current State)
 
 ### 📱 Fully Immersive UI & Navigation
 - **Navigation Shell**: A robust architecture using **Voyager** for screen-based navigation. Features an adaptive layout (Mobile Drawer/Tabs vs. Desktop Sidebar).
-- **First-Run Experience**: A beautiful, interactive **Onboarding** flow that introduces the app's core capabilities.
-- **Root Screens**:
+- **Simplified Experience**: A beautiful, interactive **Onboarding** flow that introduces the app's core capabilities.
+- **Familiar Screens**:
     - **Home**: Trending book carousel and recent reading history.
     - **Library**: Adaptive grid view with powerful **Sort & Filter** sheets.
     - **Collections**: Folder-based organization for your media.
