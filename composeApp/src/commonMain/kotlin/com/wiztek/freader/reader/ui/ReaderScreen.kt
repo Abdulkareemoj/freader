@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import com.wiztek.freader.di.LocalAppModule
 import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.reader.engine.ReaderScreenModel
 import com.wiztek.freader.reader.renderer.ReaderRenderer
@@ -18,10 +19,12 @@ data class ReaderScreen(val book: LibraryBook) : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        // You would typically provide the repository to the ScreenModel here
+        val appModule = LocalAppModule.current
+        val repository = appModule?.libraryRepository ?: error("LibraryRepository not provided")
+        
         val screenModel = ReaderScreenModel(
             book,
-            repository = TODO(), /* Provide repository from DI */
+            repository = repository
         )
         val state by screenModel.state.collectAsState()
         val navigator = LocalNavigator.current
