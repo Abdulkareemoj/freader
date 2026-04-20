@@ -39,9 +39,13 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.sqldelight.coroutines.extensions)
             implementation(libs.commons.compress)
+            api(libs.okio)
+            implementation(libs.kotlinx.datetime)
         }
         androidMain.dependencies {
             implementation(libs.sqldelight.android.driver)
+            implementation(libs.readium.shared)
+            implementation(libs.readium.streamer)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.native.driver)

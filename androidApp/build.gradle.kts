@@ -26,5 +26,6 @@ android {
 
 dependencies {
     implementation(project(":composeApp"))
+    implementation(libs.volley)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }

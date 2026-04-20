@@ -1,5 +1,5 @@
 [versions]
-agp = "9.1.0"
+agp = "9.1.1"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
@@ -21,12 +21,16 @@ koinCoreVersion = "4.2.1"
 kotlin = "2.3.0"
 kotlinx-coroutines = "1.10.2"
 material3 = "1.10.0-alpha05"
+okio = "3.17.0"
 readiumVersion = "3.1.2"
 voyager = "1.1.0-beta03"
 sqldelight = "2.3.2"
 materialKolor = "4.1.1"
 coil = "3.0.0-rc01"
 commonsCompress = "1.27.1"
+filekit = "0.8.8"
+kotlinx-datetime = "0.7.1"
+volley = "1.2.1"
 
 [libraries]
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
@@ -56,6 +60,7 @@ compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-previ
 compose-materialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "composeIcons" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 readium-lcp = { module = "org.readium.kotlin-toolkit:readium-lcp", version.ref = "readiumVersion" }
 readium-navigator = { module = "org.readium.kotlin-toolkit:readium-navigator", version.ref = "readiumVersion" }
 readium-opds = { module = "org.readium.kotlin-toolkit:readium-opds", version.ref = "readiumVersion" }
@@ -78,6 +83,10 @@ coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version
 coil-mp = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 
 commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompress" }
+filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekit" }
+filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+volley = { group = "com.android.volley", name = "volley", version.ref = "volley" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

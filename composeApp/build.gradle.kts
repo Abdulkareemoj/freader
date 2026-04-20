@@ -32,13 +32,15 @@ kotlin {
             
             implementation(libs.material.kolor)
             
-            implementation(project(":shared"))
+            api(project(":shared"))
             
             implementation(libs.coil.compose)
             implementation(libs.coil.compose.core)
             implementation(libs.coil.mp)
             implementation(libs.koin.core.v421)
             implementation(libs.koin.compose)
+            implementation(libs.filekit.compose)
+            implementation(libs.filekit.core)
         }
         val desktopMain by getting {
             dependencies {
