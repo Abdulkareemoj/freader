@@ -10,17 +10,33 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.wiztek.freader.ui.components.SectionHeader
+import io.github.vinceglb.filekit.compose.rememberFilePickerLauncher
+import io.github.vinceglb.filekit.core.PickerMode
+import io.github.vinceglb.filekit.core.PickerType
+import kotlinx.coroutines.launch
 
 @Composable
 fun DiscoverScreen(
-    onImportClick: () -> Unit
+    screenModel: DiscoverScreenModel
 ) {
+    val scope = rememberCoroutineScope()
+    
+    val launcher = rememberFilePickerLauncher(
+        type = PickerType.File(extensions = listOf("epub", "pdf", "txt", "cbz", "cbr", "mobi")),
+        mode = PickerMode.Single
+    ) { file ->
+        file?.let {
+            screenModel.importFile(it)
+        }
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -28,7 +44,7 @@ fun DiscoverScreen(
     ) {
         item {
             Card(
-                onClick = onImportClick,
+                onClick = { scope.launch { launcher.launch() } },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(160.dp),
@@ -96,7 +112,6 @@ fun CategoryCard(title: String, modifier: Modifier = Modifier) {
             .height(100.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .clickable { /* TODO */ }
             .padding(16.dp),
         contentAlignment = Alignment.BottomStart
     ) {
