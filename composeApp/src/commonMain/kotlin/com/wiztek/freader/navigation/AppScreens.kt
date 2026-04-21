@@ -203,7 +203,11 @@ sealed class VoyagerScreen : Screen {
         @Composable
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
-            DiscoverScreen(onImportClick = { navigator.push(ProcessingLibrary) })
+            // Assuming ScreenModel is available via Koin injection
+            val screenModel = org.koin.compose.koinInject<com.wiztek.freader.ui.screens.discover.DiscoverScreenModel>()
+            com.wiztek.freader.ui.screens.discover.DiscoverScreen(
+                screenModel = screenModel
+            )
         }
     }
 

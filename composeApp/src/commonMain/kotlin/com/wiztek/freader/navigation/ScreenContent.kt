@@ -39,7 +39,10 @@ fun ScreenContent(screen: AppScreen) {
                 onSortOrderChange = { viewModel.onSortOrderChange(it) }
             )
         }
-        AppScreen.Discover -> DiscoverScreen(onImportClick = {})
+        AppScreen.Discover -> {
+            val screenModel = org.koin.compose.koinInject<com.wiztek.freader.ui.screens.discover.DiscoverScreenModel>()
+            DiscoverScreen(screenModel = screenModel)
+        }
         AppScreen.Collections -> CollectionsScreen()
         AppScreen.Stats -> StatsScreen()
         AppScreen.Settings -> SettingsScreen()
