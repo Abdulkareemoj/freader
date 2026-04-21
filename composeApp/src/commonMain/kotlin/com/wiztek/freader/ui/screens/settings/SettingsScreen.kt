@@ -28,9 +28,7 @@ import com.wiztek.freader.settings.SettingsManager
 @Composable
 fun SettingsScreen() {
     val navigator = LocalNavigator.currentOrThrow
-    val darkMode by SettingsManager.isDarkMode.collectAsState()
-    var fontScaling by remember { mutableStateOf(1.15f) }
-    var pageTurnAnimation by remember { mutableStateOf(true) }
+    val settings by SettingsManager.settings.collectAsState()
 
     Scaffold(
         topBar = {
@@ -59,16 +57,16 @@ fun SettingsScreen() {
                 title = "Dark Mode",
                 subtitle = "Adjust the app's visual theme",
                 icon = Icons.Default.DarkMode,
-                checked = darkMode,
+                checked = settings.isDarkMode,
                 onCheckedChange = { SettingsManager.setDarkMode(it) }
             )
 
             SettingsSliderItem(
                 title = "Font Scaling",
-                value = fontScaling,
-                onValueChange = { fontScaling = it },
+                value = settings.fontScaling,
+                onValueChange = { SettingsManager.setFontScaling(it) },
                 icon = Icons.Default.TextFields,
-                displayValue = "${(fontScaling * 100).toInt()}%"
+                displayValue = "${(settings.fontScaling * 100).toInt()}%"
             )
 
             SettingsThemeItem(
@@ -84,8 +82,8 @@ fun SettingsScreen() {
                 title = "Page Turn Animation",
                 subtitle = "Use realistic curl effect",
                 icon = Icons.AutoMirrored.Filled.MenuBook,
-                checked = pageTurnAnimation,
-                onCheckedChange = { pageTurnAnimation = it }
+                checked = settings.pageTurnAnimation,
+                onCheckedChange = { SettingsManager.setPageTurnAnimation(it) }
             )
 
             // CLOUD SOURCES SECTION
