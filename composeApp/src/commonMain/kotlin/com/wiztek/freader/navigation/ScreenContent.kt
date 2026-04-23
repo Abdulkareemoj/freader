@@ -25,8 +25,7 @@ fun ScreenContent(screen: AppScreen) {
             val viewModel = remember { HomeViewModel(appModule?.libraryRepository ?: error("HomeViewModel not provided")) }
             val state by viewModel.state.collectAsState()
             HomeScreen(
-                books = state.recentBooks,
-                onBookClick = { /* Handle navigation in Voyager */ }
+                books = state.recentBooks
             )
         }
         AppScreen.Library -> {
