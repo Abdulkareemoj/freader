@@ -9,13 +9,12 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.wiztek.freader.library.model.LibraryBook
-import com.wiztek.freader.reader.ui.ReaderScreen
 import com.wiztek.freader.ui.components.*
+import com.wiztek.freader.ui.screens.reader.ReaderScreen
 
 @Composable
 fun HomeScreen(
-    books: List<LibraryBook>,
-    onBookClick: (LibraryBook) -> Unit
+    books: List<LibraryBook>
 ) {
     val navigator = LocalNavigator.currentOrThrow
 
@@ -28,7 +27,7 @@ fun HomeScreen(
             HomeCarousel(
                 books = books,
                 onBookClick = { book ->
-                    navigator.push(ReaderScreen(book))
+                    navigator.push(ReaderScreen(book = book))
                 },
                 onSeeAllClick = { /* TODO */ }
             )
@@ -37,7 +36,9 @@ fun HomeScreen(
         item {
             ContinueReadingSection(
                 books = books,
-                onBookClick = onBookClick
+                onBookClick = { book ->
+                    navigator.push(ReaderScreen(book = book))
+                }
             )
         }
 
@@ -48,7 +49,9 @@ fun HomeScreen(
         item {
             RecentBooksSection(
                 books = books,
-                onBookClick = onBookClick
+                onBookClick = { book ->
+                    navigator.push(ReaderScreen(book = book))
+                }
             )
         }
 
