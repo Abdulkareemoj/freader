@@ -54,15 +54,7 @@ sealed class VoyagerScreen : Screen {
             val state by viewModel.state.collectAsState()
 
             HomeScreen(
-                books = state.recentBooks,
-                onBookClick = { book -> 
-                    val sName = book.seriesName
-                    if (sName != null) {
-                        navigator.push(SeriesDetails(sName, state.recentBooks.filter { it.seriesName == sName }))
-                    } else {
-                        navigator.push(BookDetails(book))
-                    }
-                }
+                books = state.recentBooks
             )
         }
     }
@@ -148,9 +140,7 @@ sealed class VoyagerScreen : Screen {
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
             ReaderScreen(
-                book = book,
-                onBack = { navigator.pop() },
-                onTOC = { navigator.push(ReaderContents(book)) }
+                book = book
             )
         }
     }
