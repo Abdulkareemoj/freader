@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.wiztek.freader.ui.components.BookCard
+import com.wiztek.freader.ui.components.EmptyStateView
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -74,81 +77,101 @@ fun SearchScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Recent Searches
-                item {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "RECENT SEARCHES",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                if (query.isNotEmpty()) {
+                    if (searchResults.isEmpty()) {
+                        item {
+                            EmptyStateView(
+                                title = "No Results",
+                                message = "We couldn't find any books matching your search.",
+                                icon = Icons.Default.Search
                             )
-                            TextButton(onClick = { recentSearches.clear() }) {
-                                Text("Clear all", color = MaterialTheme.colorScheme.primary)
-                            }
                         }
-                        
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            recentSearches.forEach { search ->
-                                InputChip(
-                                    selected = false,
-                                    onClick = { screenModel.onQueryChange(search) },
-                                    label = { Text(search) },
-                                    trailingIcon = {
-                                        Icon(
-                                            Icons.Default.Close,
-                                            contentDescription = "Remove",
-                                            modifier = Modifier.size(16.dp).clickable { recentSearches.remove(search) }
-                                        )
-                                    },
-                                    shape = RoundedCornerShape(12.dp)
+                    } else {
+                        items(searchResults) { book ->
+                            BookCard(
+                                book = book,
+                                onClick = { /* TODO */ },
+                                modifier = Modifier.fillMaxWidth().height(120.dp)
+                            )
+                        }
+                    }
+                } else {
+                    // Recent Searches
+                    item {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "RECENT SEARCHES",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                                TextButton(onClick = { recentSearches.clear() }) {
+                                    Text("Clear all", color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                            
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                recentSearches.forEach { search ->
+                                    InputChip(
+                                        selected = false,
+                                        onClick = { screenModel.onQueryChange(search) },
+                                        label = { Text(search) },
+                                        trailingIcon = {
+                                            Icon(
+                                                Icons.Default.Close,
+                                                contentDescription = "Remove",
+                                                modifier = Modifier.size(16.dp).clickable { recentSearches.remove(search) }
+                                            )
+                                        },
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                }
                             }
                         }
                     }
-                }
 
-                // Explore Categories
-                item {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "EXPLORE CATEGORIES",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            IconButton(onClick = { showCreateTagDialog = true }) {
-                                Icon(Icons.Default.Add, "Add Category")
+                    // Explore Categories
+                    item {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "EXPLORE CATEGORIES",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                IconButton(onClick = { showCreateTagDialog = true }) {
+                                    Icon(Icons.Default.Add, "Add Category")
+                                }
                             }
-                        }
-                        
-                        Spacer(Modifier.height(16.dp))
+                            
+                            Spacer(Modifier.height(16.dp))
 
-                        val chunkedCategories = categories.chunked(2)
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            chunkedCategories.forEach { pair ->
-                                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    pair.forEach { category ->
-                                        CategoryGridBox(
-                                            category = category,
-                                            modifier = Modifier.weight(1f)
-                                        )
+                            val chunkedCategories = categories.chunked(2)
+                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                chunkedCategories.forEach { pair ->
+                                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        pair.forEach { category ->
+                                            CategoryGridBox(
+                                                category = category,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
+                                        if (pair.size == 1) Spacer(Modifier.weight(1f))
                                     }
-                                    if (pair.size == 1) Spacer(Modifier.weight(1f))
                                 }
                             }
                         }
