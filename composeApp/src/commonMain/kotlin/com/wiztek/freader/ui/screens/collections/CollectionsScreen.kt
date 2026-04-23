@@ -56,7 +56,15 @@ fun CollectionsScreen(
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
-            if (state.isLoading) {
+            if (state.collections.isEmpty() && !state.isLoading) {
+                com.wiztek.freader.ui.components.EmptyStateView(
+                    title = "Your Collections are Empty",
+                    message = "Tap the '+' button to create your first collection.",
+                    icon = Icons.Default.Bookmark,
+                    actionLabel = "Create Collection",
+                    onActionClick = { showCreateDialog = true }
+                )
+            } else if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {
                 LazyVerticalGrid(
