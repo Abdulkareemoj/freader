@@ -22,8 +22,9 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun StatsScreen() {
+fun StatsScreen(screenModel: StatsScreenModel = org.koin.compose.koinInject()) {
     val navigator = LocalNavigator.currentOrThrow
+    val state by screenModel.state.collectAsState()
     var selectedTimeRange by remember { mutableStateOf("Week") }
     val timeRanges = listOf("Week", "Month", "Year", "All Time")
 
@@ -68,14 +69,14 @@ fun StatsScreen() {
                 ) {
                     StatSummaryCard(
                         title = "Books Read",
-                        value = "12",
+                        value = state.booksRead.toString(),
                         icon = Icons.Default.AutoStories,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f)
                     )
                     StatSummaryCard(
                         title = "Reading Time",
-                        value = "48h",
+                        value = "${state.readingTimeHours}h",
                         icon = Icons.Default.Timer,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.weight(1f)
