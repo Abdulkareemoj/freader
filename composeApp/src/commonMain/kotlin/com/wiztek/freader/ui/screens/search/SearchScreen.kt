@@ -4,9 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,16 +20,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun SearchScreen() {
+fun SearchScreen(
+    screenModel: SearchScreenModel = org.koin.compose.koinInject()
+) {
     val navigator = LocalNavigator.currentOrThrow
-    var query by remember { mutableStateOf("") }
-    var active by remember { mutableStateOf(false) }
+    val query by screenModel.query.collectAsState()
+    val searchResults by screenModel.searchResults.collectAsState()
+    
     var showCreateTagDialog by remember { mutableStateOf(false) }
 
     val recentSearches = remember { mutableStateListOf("Project Hail Mary", "Isaac Asimov", "Dune Messiah") }
@@ -54,37 +53,21 @@ fun SearchScreen() {
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Top Search Bar (more rounded like design)
-            Row(
+            // Search Input
+            OutlinedTextField(
+                value = query,
+                onValueChange = { screenModel.onQueryChange(it) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    onClick = { active = true }
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(onClick = { navigator.pop() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
-                        }
-                        Text(
-                            text = if (query.isEmpty()) "Search books, authors, series..." else query,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = if (query.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.weight(1f)
-                        )
+                placeholder = { Text("Search books, authors, series...") },
+                leadingIcon = { 
+                    IconButton(onClick = { navigator.pop() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
-                }
-            }
+                },
+                shape = CircleShape
+            )
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -118,13 +101,13 @@ fun SearchScreen() {
                             recentSearches.forEach { search ->
                                 InputChip(
                                     selected = false,
-                                    onClick = { query = search },
+                                    onClick = { screenModel.onQueryChange(search) },
                                     label = { Text(search) },
                                     trailingIcon = {
                                         Icon(
                                             Icons.Default.Close,
-                                            null,
-                                            Modifier.size(16.dp).clickable { recentSearches.remove(search) }
+                                            contentDescription = "Remove",
+                                            modifier = Modifier.size(16.dp).clickable { recentSearches.remove(search) }
                                         )
                                     },
                                     shape = RoundedCornerShape(12.dp)
@@ -155,7 +138,6 @@ fun SearchScreen() {
                         
                         Spacer(Modifier.height(16.dp))
 
-                        // 2-column category grid manually handled for LazyColumn scroll
                         val chunkedCategories = categories.chunked(2)
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             chunkedCategories.forEach { pair ->
