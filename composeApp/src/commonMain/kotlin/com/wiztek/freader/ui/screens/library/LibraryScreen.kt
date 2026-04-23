@@ -79,7 +79,7 @@ fun LibraryScreen(
             label = "LayoutAnimation"
         ) { targetLayout ->
             if (state.books.isEmpty() && !state.isLoading) {
-                EmptyLibrary(
+                EmptyStateView(
                     title = "Your Library is Empty",
                     message = "Tap 'Import Books' to add your first ebook or comic.",
                     icon = Icons.AutoMirrored.Filled.MenuBook,
