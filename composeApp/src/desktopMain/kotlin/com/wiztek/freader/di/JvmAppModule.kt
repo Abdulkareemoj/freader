@@ -4,7 +4,10 @@ import com.wiztek.freader.database.DatabaseDriverFactory
 import com.wiztek.freader.database.createDatabase
 import com.wiztek.freader.library.repository.LibraryRepository
 import com.wiztek.freader.library.LibraryImporter
+import com.wiztek.freader.library.BookMetadataExtractor
 import com.wiztek.freader.library.LibraryImporterImpl
+import com.wiztek.freader.settings.SettingsPersistence
+import com.wiztek.freader.settings.SettingsPersistenceImpl
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import org.koin.dsl.module
@@ -27,5 +30,13 @@ val jvmAppModule = module {
 
     single<com.wiztek.freader.library.BookMetadataExtractor> {
         com.wiztek.freader.library.BookMetadataExtractor()
+    }
+
+    // Settings Persistence
+    single<SettingsPersistence> {
+        val userHome = System.getProperty("user.home")
+        val appDataDir = userHome.toPath().div(".freader")
+        val path = appDataDir.div("settings.json")
+        SettingsPersistenceImpl(FileSystem.SYSTEM, path)
     }
 }
