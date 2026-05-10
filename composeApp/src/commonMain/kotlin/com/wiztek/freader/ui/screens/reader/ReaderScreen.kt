@@ -24,7 +24,10 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.wiztek.freader.library.model.LibraryBook
-import com.wiztek.freader.ui.components.SelectionToolbar
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
+
+import com.wiztek.freader.ui.components.reader.PublicationReader
 
 data class ReaderScreen(
     val book: LibraryBook
@@ -32,9 +35,13 @@ data class ReaderScreen(
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        val scope = rememberCoroutineScope()
+        
         ReaderScreenContent(
             book = book,
-            onBack = { navigator.pop() },
+            onBack = { 
+                navigator.pop()
+            },
             onTOC = { /* TODO: Implement TOC navigation */ }
         )
     }
@@ -49,8 +56,6 @@ fun ReaderScreenContent(
 ) {
     var showControls by remember { mutableStateOf(true) }
     var showSettings by remember { mutableStateOf(false) }
-    
-    var showSelectionToolbar by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -88,63 +93,20 @@ fun ReaderScreenContent(
                         IconButton(onClick = onTOC) {
                             Icon(Icons.AutoMirrored.Filled.List, "TOC")
                         }
-                        Spacer(Modifier.weight(1f))
-                        Text(
-                            "Page 12 of 345",
-                            style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.padding(end = 16.dp)
-                        )
-                    },
-                    floatingActionButton = {
-                        FloatingActionButton(
-                            onClick = { /* TODO */ },
-                            containerColor = BottomAppBarDefaults.bottomAppBarFabColor
-                        ) {
-                            Icon(Icons.Default.ChevronRight, "Next Page")
-                        }
                     }
                 )
             }
         }
     ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                ) { 
-                    if (showSelectionToolbar) showSelectionToolbar = false
-                    else showControls = !showControls 
-                }
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp)
-                    .padding(top = if (showControls) padding.calculateTopPadding() else 24.dp)
-                    .padding(bottom = if (showControls) padding.calculateBottomPadding() else 24.dp)
-            ) {
-                Text(
-                    text = "Chapter 1: The Beginning",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    modifier = Modifier.clickable { showSelectionToolbar = true }
-                )
-                Spacer(Modifier.height(24.dp))
-                Text(
-                    text = "Sample content...",
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        fontSize = 18.sp,
-                        lineHeight = 27.sp,
-                        fontFamily = FontFamily.Serif
-                    )
-                )
-            }
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            PublicationReader(
+                book = book,
+                modifier = Modifier.fillMaxSize(),
+                onProgressChanged = { /* Save progress to DB */ },
+                onToggleControls = { showControls = !showControls }
+            )
         }
 
-        // Quick Settings Sheet
         if (showSettings) {
             ReaderSettingsSheet(onDismiss = { showSettings = false })
         }

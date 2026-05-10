@@ -1,6 +1,7 @@
 package com.wiztek.freader.ui.screens.details
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,11 +9,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headset
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.reader.model.BookFormat
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,8 +35,12 @@ fun BookDetailsScreen(
     onReadClick: () -> Unit,
     onListenClick: () -> Unit,
     onEditClick: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: BookDetailsViewModel = koinInject()
 ) {
+    val state by viewModel.state.collectAsState()
+    var showCollectionPicker by remember { mutableStateOf(false) }
+
     // Only show listen button for text-based formats
     val canListen = book.format == BookFormat.EPUB || 
                     book.format == BookFormat.PDF || 
@@ -49,6 +56,9 @@ fun BookDetailsScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showCollectionPicker = true }) {
+                        Icon(Icons.Default.BookmarkAdd, "Add to Collection")
+                    }
                     IconButton(onClick = onEditClick) {
                         Icon(Icons.Default.Edit, "Edit Metadata")
                     }
@@ -59,6 +69,7 @@ fun BookDetailsScreen(
             )
         }
     ) { padding ->
+        // ... rest of the file
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -169,5 +180,34 @@ fun BookDetailsScreen(
             
             Spacer(Modifier.height(32.dp))
         }
+    }
+
+    if (showCollectionPicker) {
+        AlertDialog(
+            onDismissRequest = { showCollectionPicker = false },
+            title = { Text("Add to Collection") },
+            text = {
+                if (state.collections.isEmpty()) {
+                    Text("No collections found. Create one first!")
+                } else {
+                    Column {
+                        state.collections.forEach { collection ->
+                            ListItem(
+                                headlineContent = { Text(collection.name) },
+                                modifier = Modifier.clickable {
+                                    viewModel.addBookToCollection(book.id, collection.id)
+                                    showCollectionPicker = false
+                                }
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showCollectionPicker = false }) {
+                    Text("Close")
+                }
+            }
+        )
     }
 }

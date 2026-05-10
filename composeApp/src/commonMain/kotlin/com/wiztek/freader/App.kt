@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 
 @Composable
 fun App() {
-    val isDarkMode by SettingsManager.isDarkMode.collectAsState()
+    val settings by SettingsManager.settings.collectAsState()
 
-    AppTheme(isDarkTheme = isDarkMode) {
+    AppTheme(isDarkTheme = settings.isDarkMode) {
         // Start from Onboarding for first run experience
         Navigator(VoyagerScreen.Onboarding) { navigator ->
             BoxWithConstraints {

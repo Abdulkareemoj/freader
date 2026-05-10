@@ -16,9 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.reader.model.BookFormat
 
@@ -45,12 +47,21 @@ fun BookCard(
                     .background(getPlaceholderColor(book.format)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = getFormatIcon(book.format),
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                )
+                if (book.coverPath != null) {
+                    AsyncImage(
+                        model = book.coverPath,
+                        contentDescription = "Cover for ${book.title}",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = getFormatIcon(book.format),
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    )
+                }
             }
             
             // Progress Bar

@@ -78,7 +78,8 @@ sealed class VoyagerScreen : Screen {
                         navigator.push(BookDetails(book))
                     }
                 },
-                onSortOrderChange = { viewModel.onSortOrderChange(it) }
+                onSortOrderChange = { viewModel.onSortOrderChange(it) },
+                onFilterFormatChange = { viewModel.onFilterFormatChange(it) }
             )
         }
     }

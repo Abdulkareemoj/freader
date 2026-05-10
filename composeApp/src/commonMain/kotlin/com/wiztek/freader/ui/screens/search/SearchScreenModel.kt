@@ -19,16 +19,22 @@ class SearchScreenModel(
 
     fun onQueryChange(newQuery: String) {
         _query.value = newQuery
-        if (newQuery.isBlank()) {
+        search()
+    }
+
+    private fun search() {
+        val currentQuery = _query.value
+        if (currentQuery.isBlank()) {
             _searchResults.value = emptyList()
             return
         }
 
         screenModelScope.launch {
-            repository.getAllBooks().take(1).collect { books ->
+            repository.getAllBooks().collectLatest { books ->
                 _searchResults.value = books.filter { book ->
-                    book.title.contains(newQuery, ignoreCase = true) ||
-                            (book.author?.contains(newQuery, ignoreCase = true) == true)
+                    book.title.contains(currentQuery, ignoreCase = true) ||
+                            (book.author?.contains(currentQuery, ignoreCase = true) == true) ||
+                            (book.seriesName?.contains(currentQuery, ignoreCase = true) == true)
                 }
             }
         }

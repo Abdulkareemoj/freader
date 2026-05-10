@@ -33,15 +33,21 @@ class DiscoverScreenModel(
                 
                 // 2. Extract metadata
                 val metadata = metadataExtractor.extract(internalPath, format)
+                val bookId = kotlin.time.Clock.System.now().toEpochMilliseconds().toString()
+
+                // 3. Save cover if available
+                val coverPath = metadata?.coverBytes?.let { bytes ->
+                    importer.saveCover(bookId, bytes).getOrNull()
+                }
                 
-                // 3. Add to database
+                // 4. Add to database
                 val book = LibraryBook(
-                    id = kotlin.time.Clock.System.now().toEpochMilliseconds().toString(),
+                    id = bookId,
                     title = metadata?.title ?: file.name,
                     author = metadata?.author ?: "Unknown",
                     format = format,
                     filePath = internalPath,
-                    coverPath = null, // TODO: Handle cover image storage
+                    coverPath = coverPath,
                     progress = 0.0,
                     addedAt = kotlin.time.Clock.System.now().toEpochMilliseconds()
                 )

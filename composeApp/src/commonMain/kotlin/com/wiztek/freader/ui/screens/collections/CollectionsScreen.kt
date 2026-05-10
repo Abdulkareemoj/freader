@@ -28,6 +28,7 @@ fun CollectionsScreen(
     viewModel: CollectionsViewModel = koinInject()
 ) {
     val state by viewModel.state.collectAsState()
+    val navigator = LocalNavigator.currentOrThrow
     
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("All", "Shared", "Device Only")
@@ -77,7 +78,7 @@ fun CollectionsScreen(
                     items(state.collections) { collection ->
                         CollectionCard(
                             collection = collection,
-                            onClick = { /* TODO: Navigate to collection details */ }
+                            onClick = { navigator.push(CollectionDetailsScreen(collection)) }
                         )
                     }
                 }

@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.wiztek.freader.navigation.VoyagerScreen
 import com.wiztek.freader.ui.components.BookCard
 import com.wiztek.freader.ui.components.EmptyStateView
 
@@ -69,6 +70,13 @@ fun SearchScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { screenModel.onQueryChange("") }) {
+                            Icon(Icons.Default.Clear, "Clear search")
+                        }
+                    }
+                },
                 shape = CircleShape
             )
 
@@ -90,7 +98,7 @@ fun SearchScreen(
                         items(searchResults) { book ->
                             BookCard(
                                 book = book,
-                                onClick = { /* TODO */ },
+                                onClick = { navigator.push(VoyagerScreen.BookDetails(book)) },
                                 modifier = Modifier.fillMaxWidth().height(120.dp)
                             )
                         }
