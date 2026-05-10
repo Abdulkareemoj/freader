@@ -29,7 +29,8 @@ fun LibraryScreen(
     state: LibraryState,
     onImportClick: () -> Unit,
     onBookClick: (LibraryBook) -> Unit,
-    onSortOrderChange: (String) -> Unit
+    onSortOrderChange: (String) -> Unit,
+    onFilterFormatChange: (String) -> Unit
 ) {
     var showSortSheet by remember { mutableStateOf(false) }
     var currentLayout by remember { mutableStateOf(LibraryLayout.GRID) }
@@ -127,6 +128,10 @@ fun LibraryScreen(
             onSortSelected = {
                 onSortOrderChange(it)
                 showSortSheet = false
+            },
+            currentFilter = state.filterFormat,
+            onFilterSelected = {
+                onFilterFormatChange(it)
             }
         )
     }

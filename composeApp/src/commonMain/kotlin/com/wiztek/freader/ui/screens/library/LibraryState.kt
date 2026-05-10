@@ -6,5 +6,6 @@ data class LibraryState(
     val books: List<LibraryBook> = emptyList(),
     val isLoading: Boolean = false,
     val searchQuery: String = "",
-    val sortOrder: String = "Recently Added"
+    val sortOrder: String = "Recently Added",
+    val filterFormat: String = "All"
 )

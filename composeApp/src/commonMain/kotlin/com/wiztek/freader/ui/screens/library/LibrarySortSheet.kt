@@ -18,9 +18,12 @@ import androidx.compose.ui.unit.dp
 fun LibrarySortSheet(
     onDismiss: () -> Unit,
     currentSort: String,
-    onSortSelected: (String) -> Unit
+    onSortSelected: (String) -> Unit,
+    currentFilter: String,
+    onFilterSelected: (String) -> Unit
 ) {
     val sortOptions = listOf("Recently Added", "Title", "Author", "Progress")
+    val formats = listOf("All", "EPUB", "PDF", "CBZ")
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -76,22 +79,17 @@ fun LibrarySortSheet(
             
             Spacer(Modifier.height(12.dp))
             
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(
-                    selected = true,
-                    onClick = { },
-                    label = { Text("All") }
-                )
-                FilterChip(
-                    selected = false,
-                    onClick = { },
-                    label = { Text("EPUB") }
-                )
-                FilterChip(
-                    selected = false,
-                    onClick = { },
-                    label = { Text("PDF") }
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                formats.forEach { format ->
+                    FilterChip(
+                        selected = currentFilter == format,
+                        onClick = { onFilterSelected(format) },
+                        label = { Text(format) }
+                    )
+                }
             }
         }
     }

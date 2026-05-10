@@ -41,11 +41,21 @@ class LibraryViewModel(
         updateState()
     }
 
+    fun onFilterFormatChange(format: String) {
+        _state.update { it.copy(filterFormat = format) }
+        updateState()
+    }
+
     private fun updateState() {
-        val filtered = allBooks.filter { 
+        var filtered = allBooks.filter { 
             it.title.contains(_state.value.searchQuery, ignoreCase = true) || 
             it.author?.contains(_state.value.searchQuery, ignoreCase = true) ?: false
         }
+        
+        if (_state.value.filterFormat != "All") {
+            filtered = filtered.filter { it.format.name == _state.value.filterFormat }
+        }
+
         val sorted = applySort(filtered, _state.value.sortOrder)
         _state.update { it.copy(books = sorted, isLoading = false) }
     }
