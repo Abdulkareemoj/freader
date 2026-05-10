@@ -2,7 +2,10 @@ package com.wiztek.freader.di
 
 import coil3.ImageLoader
 import coil3.PlatformContext
+import com.android.volley.toolbox.ImageLoader
 import com.wiztek.freader.reader.CbzImageFetcher
+import com.wiztek.freader.settings.SettingsPersistence
+import com.wiztek.freader.settings.SettingsPersistenceImpl
 import org.koin.dsl.module
 import org.koin.android.ext.koin.androidContext
 import com.wiztek.freader.library.repository.LibraryRepository
@@ -43,5 +46,12 @@ val androidAppModule = module {
         val driverFactory = DatabaseDriverFactory(androidContext())
         val database = createDatabase(driverFactory)
         LibraryRepository(database)
+    }
+
+    // Settings Persistence
+    single<SettingsPersistence> {
+        val context = androidContext()
+        val path = context.filesDir.absolutePath.toPath().div("settings.json")
+        SettingsPersistenceImpl(FileSystem.SYSTEM, path)
     }
 }

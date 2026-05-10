@@ -1,10 +1,12 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
 }
 
 kotlin {
+    androidTarget()
     jvm("desktop")
 
     listOf(
@@ -29,6 +31,7 @@ kotlin {
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.screenModel)
             implementation(libs.voyager.transitions)
+            implementation(libs.voyager.koin)
             
             implementation(libs.material.kolor)
             
@@ -42,6 +45,17 @@ kotlin {
             implementation(libs.filekit.compose)
             implementation(libs.filekit.core)
         }
+        
+        val androidMain by getting {
+            dependencies {
+                implementation(libs.androidx.activity.compose)
+                implementation(libs.androidx.appcompat)
+                implementation(libs.readium.shared)
+                implementation(libs.readium.streamer)
+                implementation(libs.readium.navigator)
+            }
+        }
+
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
@@ -49,6 +63,19 @@ kotlin {
                 implementation(libs.kotlinx.coroutinesSwing)
             }
         }
+    }
+}
+
+android {
+    namespace = "com.wiztek.freader"
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+
+    defaultConfig {
+        minSdk = libs.versions.android.minSdk.get().toInt()
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 }
 
