@@ -95,4 +95,26 @@ class LibraryRepository(database: FreaderDatabase) {
     suspend fun removeBookFromCollection(collectionId: String, bookId: String) {
         queries.removeBookFromCollection(collectionId, bookId)
     }
+
+    fun getBooksForCollection(collectionId: String): Flow<List<LibraryBook>> {
+        return queries.selectBooksForCollection(collectionId)
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+            .map { entities ->
+                entities.map { entity ->
+                    LibraryBook(
+                        id = entity.id,
+                        title = entity.title,
+                        author = entity.author,
+                        format = BookFormat.valueOf(entity.format),
+                        filePath = entity.filePath,
+                        coverPath = entity.coverPath,
+                        seriesName = entity.seriesName,
+                        volumeNumber = entity.volumeNumber?.toInt(),
+                        progress = entity.progress,
+                        addedAt = entity.addedAt
+                    )
+                }
+            }
+    }
 }

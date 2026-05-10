@@ -8,6 +8,7 @@ import okio.use
 
 interface LibraryImporter {
     fun importBook(sourcePath: String): Result<String>
+    fun saveCover(bookId: String, coverBytes: ByteArray): Result<String>
 }
 
 class LibraryImporterImpl(
@@ -35,6 +36,21 @@ class LibraryImporterImpl(
                 }
             }
             
+            destination.toString()
+        }
+    }
+
+    override fun saveCover(bookId: String, coverBytes: ByteArray): Result<String> {
+        return runCatching {
+            val coversDir = appStorageDir.div("covers")
+            if (!fileSystem.exists(coversDir)) {
+                fileSystem.createDirectories(coversDir)
+            }
+
+            val destination = coversDir.div("$bookId.jpg")
+            fileSystem.write(destination) {
+                write(coverBytes)
+            }
             destination.toString()
         }
     }
