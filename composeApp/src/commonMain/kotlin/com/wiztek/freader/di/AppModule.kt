@@ -15,4 +15,5 @@ val commonAppModule = module {
     single { com.wiztek.freader.ui.screens.collections.CollectionsViewModel(get()) }
     factory { (collectionId: String) -> com.wiztek.freader.ui.screens.collections.CollectionDetailsViewModel(get(), collectionId) }
     factory { com.wiztek.freader.ui.screens.details.BookDetailsViewModel(get()) }
+    factory { (bookId: String) -> com.wiztek.freader.ui.screens.reader.ReaderScreenModel(get(), bookId) }
 }
