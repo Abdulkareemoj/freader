@@ -44,6 +44,7 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.filekit.compose)
             implementation(libs.filekit.core)
+            implementation(libs.webview)
         }
         
         val androidMain by getting {
@@ -61,6 +62,7 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.commons.compress)
                 implementation(libs.kotlinx.coroutinesSwing)
+                implementation(libs.kcef)
             }
         }
     }
