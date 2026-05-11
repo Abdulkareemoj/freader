@@ -14,6 +14,6 @@ import com.wiztek.freader.library.model.LibraryBook
 expect fun PublicationReader(
     book: LibraryBook,
     modifier: Modifier = Modifier,
-    onProgressChanged: (Double) -> Unit,
+    onProgressChanged: (Double, String?) -> Unit,
     onToggleControls: () -> Unit
 )

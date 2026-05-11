@@ -21,7 +21,7 @@ import java.io.File
 actual fun PublicationReader(
     book: LibraryBook,
     modifier: Modifier,
-    onProgressChanged: (Double) -> Unit,
+    onProgressChanged: (Double, String?) -> Unit,
     onToggleControls: () -> Unit
 ) {
     val context = LocalContext.current
