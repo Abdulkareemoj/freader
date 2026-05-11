@@ -30,6 +30,7 @@ class LibraryRepository(database: FreaderDatabase) {
                         seriesName = entity.seriesName,
                         volumeNumber = entity.volumeNumber?.toInt(),
                         progress = entity.progress,
+                        lastReadLocator = entity.lastReadLocator,
                         addedAt = entity.addedAt
                     )
                 }
@@ -48,6 +49,7 @@ class LibraryRepository(database: FreaderDatabase) {
             volumeNumber = book.volumeNumber?.toLong(),
             addedAt = book.addedAt,
             lastReadAt = null,
+            lastReadLocator = book.lastReadLocator,
             progress = book.progress
         )
     }
@@ -56,9 +58,10 @@ class LibraryRepository(database: FreaderDatabase) {
         queries.deleteBook(id)
     }
 
-    suspend fun updateProgress(id: String, progress: Double) {
+    suspend fun updateProgress(id: String, progress: Double, locator: String?) {
         queries.updateProgress(
             progress = progress,
+            lastReadLocator = locator,
             lastReadAt = kotlin.time.Clock.System.now().toEpochMilliseconds(),
             id = id
         )

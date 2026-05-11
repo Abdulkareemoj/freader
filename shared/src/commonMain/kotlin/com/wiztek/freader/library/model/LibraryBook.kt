@@ -13,5 +13,6 @@ data class LibraryBook(
     val seriesName: String? = null,
     val volumeNumber: Int? = null,
     val progress: Double = 0.0,
+    val lastReadLocator: String? = null,
     val addedAt: Long = System.currentTimeMillis()
 )
