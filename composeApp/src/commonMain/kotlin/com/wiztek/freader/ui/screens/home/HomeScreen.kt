@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.wiztek.freader.library.model.LibraryBook
+import com.wiztek.freader.navigation.VoyagerScreen
 import com.wiztek.freader.ui.components.*
 import com.wiztek.freader.ui.screens.reader.ReaderScreen
 
@@ -27,7 +28,7 @@ fun HomeScreen(
             HomeCarousel(
                 books = books,
                 onBookClick = { book ->
-                    navigator.push(ReaderScreen(book = book))
+                    navigator.push(VoyagerScreen.Reader(book))
                 },
                 onSeeAllClick = { /* TODO */ }
             )
@@ -37,7 +38,7 @@ fun HomeScreen(
             ContinueReadingSection(
                 books = books,
                 onBookClick = { book ->
-                    navigator.push(ReaderScreen(book = book))
+                    navigator.push(VoyagerScreen.Reader(book))
                 }
             )
         }
@@ -50,7 +51,7 @@ fun HomeScreen(
             RecentBooksSection(
                 books = books,
                 onBookClick = { book ->
-                    navigator.push(ReaderScreen(book = book))
+                    navigator.push(VoyagerScreen.Reader(book))
                 }
             )
         }
