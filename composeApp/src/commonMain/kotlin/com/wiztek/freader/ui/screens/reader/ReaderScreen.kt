@@ -21,12 +21,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.wiztek.freader.library.model.LibraryBook
-import kotlinx.coroutines.launch
-import org.koin.compose.koinInject
-
+import org.koin.core.parameter.parametersOf
 import com.wiztek.freader.ui.components.reader.PublicationReader
 
 data class ReaderScreen(
@@ -35,14 +34,18 @@ data class ReaderScreen(
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val scope = rememberCoroutineScope()
+        val screenModel = koinScreenModel<ReaderScreenModel> { parametersOf(book.id) }
+        val state by screenModel.state.collectAsState()
         
         ReaderScreenContent(
-            book = book,
+            book = state.book ?: book,
             onBack = { 
                 navigator.pop()
             },
-            onTOC = { /* TODO: Implement TOC navigation */ }
+            onTOC = { /* TODO: Implement TOC navigation */ },
+            onSaveProgress = { progress, locator ->
+                screenModel.saveProgress(progress, locator)
+            }
         )
     }
 }
@@ -52,7 +55,8 @@ data class ReaderScreen(
 fun ReaderScreenContent(
     book: LibraryBook,
     onBack: () -> Unit,
-    onTOC: () -> Unit
+    onTOC: () -> Unit,
+    onSaveProgress: (Double, String?) -> Unit
 ) {
     var showControls by remember { mutableStateOf(true) }
     var showSettings by remember { mutableStateOf(false) }
@@ -102,7 +106,9 @@ fun ReaderScreenContent(
             PublicationReader(
                 book = book,
                 modifier = Modifier.fillMaxSize(),
-                onProgressChanged = { /* Save progress to DB */ },
+                onProgressChanged = { progress, locator -> 
+                    onSaveProgress(progress, locator)
+                },
                 onToggleControls = { showControls = !showControls }
             )
         }
