@@ -35,7 +35,8 @@ fun ScreenContent(screen: AppScreen) {
                 state = state,
                 onImportClick = { /* Handle navigation in Voyager */ },
                 onBookClick = { /* Handle navigation in Voyager */ },
-                onSortOrderChange = { viewModel.onSortOrderChange(it) }
+                onSortOrderChange = { viewModel.onSortOrderChange(it) },
+                onFilterFormatChange = { viewModel.onFilterFormatChange(it) }
             )
         }
         AppScreen.Discover -> {

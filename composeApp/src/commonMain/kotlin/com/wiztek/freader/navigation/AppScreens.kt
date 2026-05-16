@@ -30,6 +30,8 @@ import com.wiztek.freader.ui.screens.reader.ReaderScreen
 import com.wiztek.freader.ui.screens.reader.ComicReaderScreen
 import com.wiztek.freader.ui.screens.reader.ReaderContentsScreen
 import com.wiztek.freader.ui.screens.stats.StatsScreen
+import org.koin.core.parameter.parametersOf
+import cafe.adriel.voyager.koin.koinScreenModel
 import org.koin.compose.koinInject
 
 sealed class VoyagerScreen : Screen {
@@ -150,9 +152,13 @@ sealed class VoyagerScreen : Screen {
         @Composable
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
+            val viewModel = koinScreenModel<com.wiztek.freader.ui.screens.reader.ComicReaderViewModel> { parametersOf(book) }
             ComicReaderScreen(
-                book = book,
-                onBack = { navigator.pop() }
+                viewModel = viewModel,
+                onBack = { navigator.pop() },
+                onNavigateToBook = { nextBook ->
+                    navigator.replace(ComicReader(nextBook))
+                }
             )
         }
     }
