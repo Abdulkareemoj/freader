@@ -2,28 +2,32 @@ package com.wiztek.freader.reader
 
 import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.library.repository.LibraryRepository
-import java.io.File
+import okio.FileSystem
+import okio.Path.Companion.toPath
 
 /**
  * Concrete strategy for handling PDF books.
  */
 class PdfReaderStrategy(
-    private val repository: LibraryRepository
+    private val repository: LibraryRepository,
+    private val fileSystem: FileSystem
 ) : ReaderStrategy {
 
     override suspend fun getPages(book: LibraryBook): List<String> {
-        // TODO: Implement PDF parsing.
-        // PDF parsing is typically done using libraries like PDFBox (JVM) or 
-        // platform-specific renderers (Android PdfRenderer, iOS PDFKit).
-        // Since this is KMP, you might need a cross-platform wrapper or 
-        // specialized libraries for each platform.
-        val file = File(book.filePath)
-        if (!file.exists()) return emptyList()
+        val path = book.filePath.toPath()
+        if (!fileSystem.exists(path)) return emptyList()
 
-        return listOf("Page 1", "Page 2", "Page 3")
+        // For PDF, we treat the file itself as the single 'page' or source.
+        // The reader (WebView or native) will handle internal page navigation.
+        return listOf(book.filePath)
     }
 
-    override suspend fun saveProgress(bookId: String, pageIndex: Int) {
-        repository.updateProgress(bookId, pageIndex.toDouble())
+    override suspend fun exists(filePath: String): Boolean {
+        return fileSystem.exists(filePath.toPath())
+    }
+
+    override suspend fun saveProgress(bookId: String, progress: Double, locator: String?) {
+        repository.updateProgress(bookId, progress, locator)
     }
 }
+

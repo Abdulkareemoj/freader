@@ -10,5 +10,8 @@ data class ReaderSettings(
     val isDarkMode: Boolean = true,
     val fontScaling: Float = 1.15f,
     val pageTurnAnimation: Boolean = true,
-    val theme: ReaderTheme = ReaderTheme.PAPER
+    val theme: ReaderTheme = ReaderTheme.PAPER,
+    val useTwoColumns: Boolean = true,
+    val lineHeight: Float = 1.5f,
+    val pageMargins: Float = 1.0f
 )

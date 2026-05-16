@@ -16,5 +16,8 @@ interface ReaderStrategy {
     /**
      * Logic to handle bookmarking or saving current position for this format.
      */
-    suspend fun saveProgress(bookId: String, pageIndex: Int)
+    suspend fun saveProgress(bookId: String, progress: Double, locator: String?)
+
+    suspend fun exists(filePath: String): Boolean
 }
+
