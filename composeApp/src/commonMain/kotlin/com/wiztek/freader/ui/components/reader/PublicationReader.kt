@@ -15,5 +15,6 @@ expect fun PublicationReader(
     book: LibraryBook,
     modifier: Modifier = Modifier,
     onProgressChanged: (Double, String?) -> Unit,
-    onToggleControls: () -> Unit
+    onToggleControls: () -> Unit,
+    setNavigationCallback: (((String) -> Unit)?) -> Unit = {}
 )

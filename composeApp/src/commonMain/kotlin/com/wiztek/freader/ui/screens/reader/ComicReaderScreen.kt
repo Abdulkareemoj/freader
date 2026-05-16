@@ -22,28 +22,51 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.wiztek.freader.library.model.LibraryBook
+import com.wiztek.freader.reader.ZipImageModel
 import kotlinx.coroutines.launch
+import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ComicReaderScreen(
-    book: LibraryBook,
-    onBack: () -> Unit
+    viewModel: ComicReaderViewModel,
+    onBack: () -> Unit,
+    onNavigateToBook: (LibraryBook) -> Unit = {}
 ) {
+    val uiState by viewModel.state.collectAsState()
+    // val seriesBooks by viewModel.seriesBooks.collectAsState() // Unused for now but available if needed
+
     var showUI by remember { mutableStateOf(true) }
     var isRtl by remember { mutableStateOf(false) } 
     var showSettings by remember { mutableStateOf(false) }
     var showNextChapterDialog by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
-    val pageCount = 24
-    val pagerState = rememberPagerState(pageCount = { pageCount })
+    val pageCount = uiState.pages.size
+    val pagerState = rememberPagerState(
+        initialPage = uiState.initialPage,
+        pageCount = { pageCount }
+    )
+
+    // Sync pagerState with initialPage when it changes (e.g., after loading)
+    LaunchedEffect(uiState.initialPage) {
+        if (uiState.initialPage != pagerState.currentPage && pageCount > 0) {
+            pagerState.scrollToPage(uiState.initialPage)
+        }
+    }
 
     LaunchedEffect(pagerState.currentPage, pageCount) {
-        if (pagerState.currentPage == pageCount - 1) {
+        if (pageCount > 0 && pagerState.currentPage == pageCount - 1) {
             showUI = true 
             showNextChapterDialog = true
+        }
+    }
+
+    LaunchedEffect(pagerState.currentPage) {
+        if (uiState.pages.isNotEmpty()) {
+            viewModel.saveProgress(pagerState.currentPage)
         }
     }
     
@@ -54,34 +77,47 @@ fun ComicReaderScreen(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        CompositionLocalProvider(
-            LocalLayoutDirection provides 
-                if (isRtl) androidx.compose.ui.unit.LayoutDirection.Rtl 
-                else androidx.compose.ui.unit.LayoutDirection.Ltr
-        ) {
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable(
-                        interactionSource = clickInteractionSource,
-                        indication = null
-                    ) { showUI = !showUI },
-                pageSpacing = 8.dp,
-                beyondViewportPageCount = 1
-            ) { page ->
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Surface(
-                        modifier = Modifier.fillMaxSize().padding(if(showUI) 40.dp else 0.dp),
-                        color = Color.DarkGray,
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                "Page ${page + 1}",
-                                color = Color.White,
-                                style = MaterialTheme.typography.headlineLarge
-                            )
+        if (uiState.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        } else if (uiState.error != null) {
+            Text(
+                text = "Error: ${uiState.error}",
+                color = Color.White,
+                modifier = Modifier.align(Alignment.Center).padding(16.dp)
+            )
+        } else {
+            CompositionLocalProvider(
+                LocalLayoutDirection provides 
+                    if (isRtl) androidx.compose.ui.unit.LayoutDirection.Rtl 
+                    else androidx.compose.ui.unit.LayoutDirection.Ltr
+            ) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable(
+                            interactionSource = clickInteractionSource,
+                            indication = null
+                        ) { showUI = !showUI },
+                    pageSpacing = 8.dp,
+                    beyondViewportPageCount = 1
+                ) { pageIndex ->
+                    val pagePath = uiState.pages.getOrNull(pageIndex)
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        if (pagePath != null) {
+                            Surface(
+                                modifier = Modifier.fillMaxSize().padding(if(showUI) 40.dp else 0.dp),
+                                color = Color.DarkGray,
+                                shape = MaterialTheme.shapes.medium
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    AsyncImage(
+                                        model = ZipImageModel(uiState.book.filePath, pagePath),
+                                        contentDescription = "Page ${pageIndex + 1}",
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -96,8 +132,8 @@ fun ComicReaderScreen(
             TopAppBar(
                 title = { 
                     Column {
-                        Text(book.title.substringBeforeLast(" Vol"), style = MaterialTheme.typography.titleMedium)
-                        Text("Volume ${book.volumeNumber ?: 1}", style = MaterialTheme.typography.bodySmall)
+                        Text(uiState.book.title.substringBeforeLast(" Vol"), style = MaterialTheme.typography.titleMedium)
+                        Text("Volume ${uiState.book.volumeNumber ?: 1}", style = MaterialTheme.typography.bodySmall)
                     }
                 },
                 navigationIcon = {
@@ -167,13 +203,30 @@ fun ComicReaderScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TextButton(onClick = { }) {
+                    val nextBook = viewModel.getNextBook()
+                    val prevBook = viewModel.getPrevBook()
+
+                    TextButton(
+                        onClick = { 
+                            if (prevBook != null) {
+                                onNavigateToBook(prevBook)
+                            }
+                        },
+                        enabled = prevBook != null
+                    ) {
                         Icon(Icons.Default.SkipPrevious, null)
                         Spacer(Modifier.width(8.dp))
                         Text("Prev Chapter")
                     }
                     
-                    TextButton(onClick = { }) {
+                    TextButton(
+                        onClick = { 
+                            if (nextBook != null) {
+                                onNavigateToBook(nextBook)
+                            }
+                        },
+                        enabled = nextBook != null
+                    ) {
                         Text("Next Chapter")
                         Spacer(Modifier.width(8.dp))
                         Icon(Icons.Default.SkipNext, null)
@@ -183,22 +236,37 @@ fun ComicReaderScreen(
         }
 
         if (showNextChapterDialog) {
+            val nextBook = viewModel.getNextBook()
             AlertDialog(
                 onDismissRequest = { showNextChapterDialog = false },
-                title = { Text("End of Comic") },
-                text = { Text("${book.title} is complete. What would you like to do next?") },
+                title = { Text(if (nextBook != null) "Chapter Complete" else "End of Comic") },
+                text = { 
+                    Text(
+                        if (nextBook != null) "Would you like to read the next volume: ${nextBook.title}?"
+                        else "${uiState.book.title} is complete. What would you like to do next?"
+                    ) 
+                },
                 confirmButton = {
-                    TextButton(
-                        onClick = { 
-                            onBack() 
-                            showNextChapterDialog = false
-                        }
-                    ) { Text("Go to Series Details") }
+                    if (nextBook != null) {
+                        TextButton(
+                            onClick = { 
+                                onNavigateToBook(nextBook)
+                                showNextChapterDialog = false
+                            }
+                        ) { Text("Read Next") }
+                    } else {
+                        TextButton(
+                            onClick = { 
+                                onBack() 
+                                showNextChapterDialog = false
+                            }
+                        ) { Text("Go to Series Details") }
+                    }
                 },
                 dismissButton = {
                     TextButton(onClick = { 
                         showNextChapterDialog = false
-                    }) { Text("Back to Library") }
+                    }) { Text(if (nextBook != null) "Not Now" else "Back to Library") }
                 }
             )
         }

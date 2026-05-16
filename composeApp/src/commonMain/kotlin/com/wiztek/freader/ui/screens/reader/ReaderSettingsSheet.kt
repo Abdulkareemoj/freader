@@ -44,6 +44,40 @@ fun ReaderSettingsSheet(onDismiss: () -> Unit) {
                     onCheckedChange = { SettingsManager.setPageTurnAnimation(it) }
                 )
             }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Two Column Layout
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Two Column Layout", style = MaterialTheme.typography.labelLarge)
+                Switch(
+                    checked = settings.useTwoColumns,
+                    onCheckedChange = { SettingsManager.setUseTwoColumns(it) }
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Line Height
+            Text("Line Height", style = MaterialTheme.typography.labelLarge)
+            Slider(
+                value = settings.lineHeight,
+                onValueChange = { SettingsManager.setLineHeight(it) },
+                valueRange = 1.0f..2.5f
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            // Page Margins
+            Text("Page Margins", style = MaterialTheme.typography.labelLarge)
+            Slider(
+                value = settings.pageMargins,
+                onValueChange = { SettingsManager.setPageMargins(it) },
+                valueRange = 0.5f..2.5f
+            )
         }
     }
 }

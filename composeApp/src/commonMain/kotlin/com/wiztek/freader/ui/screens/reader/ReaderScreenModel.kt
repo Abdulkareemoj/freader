@@ -4,6 +4,9 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.library.repository.LibraryRepository
+import com.wiztek.freader.reader.ReaderStrategyFactory
+import com.wiztek.freader.reader.EpubReaderStrategy
+import com.wiztek.freader.reader.model.ReadiumManifest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -11,11 +14,13 @@ import kotlinx.coroutines.launch
 
 data class ReaderState(
     val book: LibraryBook? = null,
+    val manifest: ReadiumManifest? = null,
     val isLoading: Boolean = false
 )
 
 class ReaderScreenModel(
     private val repository: LibraryRepository,
+    private val strategyFactory: ReaderStrategyFactory,
     private val bookId: String
 ) : ScreenModel {
 
@@ -29,11 +34,17 @@ class ReaderScreenModel(
     private fun loadBook() {
         screenModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            // In a real app, we might want a flow for a single book, 
-            // but for now we'll just find it in the list or add a getBookById to repo.
             repository.getAllBooks().collect { books ->
                 val book = books.find { it.id == bookId }
-                _state.update { it.copy(book = book, isLoading = false) }
+                if (book != null) {
+                    val strategy = strategyFactory.create(book.format)
+                    val manifest = if (strategy is EpubReaderStrategy) {
+                        strategy.getManifest(book)
+                    } else null
+                    _state.update { it.copy(book = book, manifest = manifest, isLoading = false) }
+                } else {
+                    _state.update { it.copy(isLoading = false) }
+                }
             }
         }
     }
