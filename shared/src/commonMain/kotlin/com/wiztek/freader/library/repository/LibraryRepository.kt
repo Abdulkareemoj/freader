@@ -7,7 +7,6 @@ import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.library.model.LibraryCollection
 import com.wiztek.freader.reader.model.BookFormat
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -17,7 +16,7 @@ class LibraryRepository(database: FreaderDatabase) {
     fun getAllBooks(): Flow<List<LibraryBook>> {
         return queries.selectAllBooks()
             .asFlow()
-            .mapToList(Dispatchers.IO)
+            .mapToList(Dispatchers.Default)
             .map { entities ->
                 entities.map { entity ->
                     LibraryBook(
@@ -71,7 +70,7 @@ class LibraryRepository(database: FreaderDatabase) {
     fun getAllCollections(): Flow<List<LibraryCollection>> {
         return queries.selectAllCollections()
             .asFlow()
-            .mapToList(Dispatchers.IO)
+            .mapToList(Dispatchers.Default)
             .map { entities ->
                 entities.map { entity ->
                     LibraryCollection(
@@ -102,7 +101,7 @@ class LibraryRepository(database: FreaderDatabase) {
     fun getBooksForCollection(collectionId: String): Flow<List<LibraryBook>> {
         return queries.selectBooksForCollection(collectionId)
             .asFlow()
-            .mapToList(Dispatchers.IO)
+            .mapToList(Dispatchers.Default)
             .map { entities ->
                 entities.map { entity ->
                     LibraryBook(

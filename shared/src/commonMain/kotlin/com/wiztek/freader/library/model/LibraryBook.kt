@@ -14,5 +14,5 @@ data class LibraryBook(
     val volumeNumber: Int? = null,
     val progress: Double = 0.0,
     val lastReadLocator: String? = null,
-    val addedAt: Long = System.currentTimeMillis()
+    val addedAt: Long = Clock.System.now().toEpochMilliseconds()
 )
