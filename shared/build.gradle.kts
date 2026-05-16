@@ -24,7 +24,7 @@ kotlin {
         }
     }
     
-    jvm()
+        jvm("desktop")
     
     js {
         outputModuleName = "shared"
@@ -43,18 +43,25 @@ kotlin {
             api(libs.okio)
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.coil.mp)
         }
         androidMain.dependencies {
             implementation(libs.sqldelight.android.driver)
             implementation(libs.readium.shared)
             implementation(libs.readium.streamer)
+            implementation(libs.okio.zipfilesystem)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.native.driver)
         }
-        jvmMain.dependencies {
-            implementation(libs.sqldelight.sqlite.driver)
+        
+        val desktopMain by getting {
+            dependencies {
+                implementation(libs.sqldelight.sqlite.driver)
+                implementation(libs.kotlinx.coroutinesSwing)
+            }
         }
+        
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
@@ -72,9 +79,8 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
     }
 }
-dependencies {
-    implementation(libs.kotlinx.coroutinesSwing)
-}
+
+// Removed: stray top-level dependencies {} block
 
 sqldelight {
     databases {
@@ -82,4 +88,8 @@ sqldelight {
             packageName.set("com.wiztek.freader.database")
         }
     }
+}
+
+tasks.matching { it.name == "desktopRun" }.configureEach {
+    enabled = false
 }

@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -32,6 +33,7 @@ kotlin {
             implementation(libs.voyager.screenModel)
             implementation(libs.voyager.transitions)
             implementation(libs.voyager.koin)
+            implementation(libs.koin.compose)
             
             implementation(libs.material.kolor)
             
@@ -45,6 +47,7 @@ kotlin {
             implementation(libs.filekit.compose)
             implementation(libs.filekit.core)
             implementation(libs.webview)
+            implementation(libs.kotlinx.serialization.json)
         }
         
         val androidMain by getting {
@@ -54,6 +57,8 @@ kotlin {
                 implementation(libs.readium.shared)
                 implementation(libs.readium.streamer)
                 implementation(libs.readium.navigator)
+                implementation(libs.koin.android.v421)
+                implementation(libs.commons.compress)
             }
         }
 
@@ -62,7 +67,11 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.commons.compress)
                 implementation(libs.kotlinx.coroutinesSwing)
-                implementation(libs.kcef)
+                
+                // Ktor for local book streaming
+                implementation("io.ktor:ktor-server-core:2.3.12")
+                implementation("io.ktor:ktor-server-netty:2.3.12")
+                implementation("io.ktor:ktor-server-cors:2.3.12")
             }
         }
     }

@@ -1,3 +1,9 @@
+buildscript {
+    configurations.classpath {
+        resolutionStrategy.force("org.jetbrains:annotations:23.0.0")
+    }
+}
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
     alias(libs.plugins.androidApplication) apply false
@@ -9,9 +15,8 @@ plugins {
 }
 
 allprojects {
-    repositories {
-        mavenCentral()
-        google()
-        maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
+    configurations.all {
+        resolutionStrategy.force("org.jetbrains:annotations:23.0.0")
     }
 }
+
