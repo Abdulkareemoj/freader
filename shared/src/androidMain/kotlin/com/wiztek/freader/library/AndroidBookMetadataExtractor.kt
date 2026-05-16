@@ -1,6 +1,7 @@
 package com.wiztek.freader.library
 
 import android.content.Context
+import android.graphics.Bitmap
 import com.wiztek.freader.reader.model.BookFormat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,23 +14,21 @@ import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
-import org.readium.r2.shared.util.http.HttpResponse
 import org.readium.r2.shared.util.http.HttpError
 import org.readium.r2.shared.util.http.HttpStreamResponse
 import org.readium.r2.shared.util.Try
+import java.io.ByteArrayOutputStream
 import java.io.File
 
 class AndroidBookMetadataExtractor(private val context: Context) : BookMetadataExtractor {
     
     private val httpClient = object : HttpClient {
-        suspend fun execute(request: HttpRequest): Try<HttpResponse, HttpError> =
-            Try.failure(HttpError.MalformedResponse(null))
         override suspend fun stream(request: HttpRequest): Try<HttpStreamResponse, HttpError> =
             Try.failure(HttpError.MalformedResponse(null))
     }
 
     private val assetRetriever = AssetRetriever(context.contentResolver, httpClient)
-    private val publicationParser = DefaultPublicationParser(context, httpClient, assetRetriever)
+    private val publicationParser = DefaultPublicationParser(context, httpClient, assetRetriever, null)
     private val publicationOpener = PublicationOpener(publicationParser)
 
     override suspend fun extract(filePath: String, format: BookFormat): BookMetadata? = withContext(Dispatchers.IO) {
@@ -43,8 +42,14 @@ class AndroidBookMetadataExtractor(private val context: Context) : BookMetadataE
             val title = publication.metadata.title ?: file.name
             val author = publication.metadata.authors.firstOrNull()?.name
             
-            val coverResource = publication.cover()
-            val coverBytes = coverResource?.read()?.getOrNull()
+            // Get the cover as a Bitmap and convert to ByteArray
+            val bitmap = publication.cover()
+            val coverBytes = bitmap?.let {
+                ByteArrayOutputStream().use { stream ->
+                    it.compress(Bitmap.CompressFormat.JPEG, 80, stream)
+                    stream.toByteArray()
+                }
+            }
             
             BookMetadata(
                 title = title,
