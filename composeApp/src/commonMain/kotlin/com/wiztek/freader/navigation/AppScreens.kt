@@ -1,13 +1,15 @@
 package com.wiztek.freader.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.wiztek.freader.data.preview.sampleBooks
 import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.library.repository.LibraryRepository
 import com.wiztek.freader.reader.model.BookFormat
@@ -31,7 +33,6 @@ import com.wiztek.freader.ui.screens.reader.ComicReaderScreen
 import com.wiztek.freader.ui.screens.reader.ReaderContentsScreen
 import com.wiztek.freader.ui.screens.stats.StatsScreen
 import org.koin.core.parameter.parametersOf
-import cafe.adriel.voyager.koin.koinScreenModel
 import org.koin.compose.koinInject
 
 sealed class VoyagerScreen : Screen {
@@ -39,7 +40,11 @@ sealed class VoyagerScreen : Screen {
         @Composable
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
-            OnboardingScreen(onFinish = { navigator.replaceAll(Home) })
+            var getStarted by remember { mutableStateOf(false) }
+            LaunchedEffect(getStarted) {
+                if (getStarted) navigator.replaceAll(Home)
+            }
+            OnboardingScreen(onFinish = { getStarted = true })
         }
     }
 
@@ -48,11 +53,7 @@ sealed class VoyagerScreen : Screen {
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
             val repository = koinInject<LibraryRepository>()
-            val viewModel = remember { 
-                HomeViewModel(repository).apply {
-                    addSampleData(sampleBooks)
-                }
-            }
+            val viewModel = remember { HomeViewModel(repository) }
             val state by viewModel.state.collectAsState()
 
             HomeScreen(
@@ -152,7 +153,7 @@ sealed class VoyagerScreen : Screen {
         @Composable
         override fun Content() {
             val navigator = LocalNavigator.currentOrThrow
-            val viewModel = koinScreenModel<com.wiztek.freader.ui.screens.reader.ComicReaderViewModel> { parametersOf(book) }
+            val viewModel = koinInject<com.wiztek.freader.ui.screens.reader.ComicReaderViewModel> { parametersOf(book) }
             ComicReaderScreen(
                 viewModel = viewModel,
                 onBack = { navigator.pop() },
