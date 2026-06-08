@@ -16,7 +16,11 @@ plugins {
 
 allprojects {
     configurations.all {
-        resolutionStrategy.force("org.jetbrains:annotations:23.0.0")
+        resolutionStrategy {
+            force("org.jetbrains:annotations:23.0.0")
+            force("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+            force("org.jetbrains.kotlinx:kotlinx-datetime-jvm:0.6.1")
+        }
     }
 }
 

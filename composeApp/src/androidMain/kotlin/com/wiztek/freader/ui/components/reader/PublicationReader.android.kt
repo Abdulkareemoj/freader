@@ -2,53 +2,97 @@ package com.wiztek.freader.ui.components.reader
 
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import com.wiztek.freader.library.model.LibraryBook
+import com.wiztek.freader.reader.engine.ReadiumEngine
 import com.wiztek.freader.reader.ui.ReadiumFragmentRenderer
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.streamer.PublicationOpener
-import org.readium.r2.streamer.parser.DefaultPublicationParser
-import org.readium.r2.shared.util.asset.AssetRetriever
-import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrElse
-import java.io.File
+import org.json.JSONObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 actual fun PublicationReader(
     book: LibraryBook,
     modifier: Modifier,
     onProgressChanged: (Double, String?) -> Unit,
-    onToggleControls: () -> Unit
+    onToggleControls: () -> Unit,
+    setNavigationCallback: (((String) -> Unit)?) -> Unit
 ) {
     val context = LocalContext.current
     val activity = remember(context) { context.findActivity() }
-    
+
     var publication by remember { mutableStateOf<Publication?>(null) }
-
-    // Logic to open the publication using Readium Streamer
-    LaunchedEffect(book.filePath) {
-        val assetRetriever = AssetRetriever(context.contentResolver)
-        val publicationParser = DefaultPublicationParser(context, assetRetriever = assetRetriever)
-        val publicationOpener = PublicationOpener(publicationParser)
-
-        val file = File(book.filePath)
-        val url = Url(file.toURI().toURL().toString()) as? AbsoluteUrl ?: return@LaunchedEffect
-        
-        val asset = assetRetriever.retrieve(url).getOrElse { return@LaunchedEffect }
-        publication = publicationOpener.open(asset, allowUserInteraction = false).getOrNull()
+    val initialLocator = remember(book.lastReadLocator) {
+        book.lastReadLocator?.let { Locator.fromJSON(JSONObject(it)) }
     }
 
-    publication?.let { pub ->
-        if (activity != null) {
-            ReadiumFragmentRenderer(
-                publication = pub,
-                fragmentActivity = activity,
-                modifier = modifier
-            )
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(book.filePath) {
+        isLoading = true
+        errorMessage = null
+        publication = null
+
+        if (book.filePath.isBlank()) {
+            errorMessage = "No file path for \"${book.title}\". Use the Discover tab to import books."
+            isLoading = false
+            return@LaunchedEffect
+        }
+        withContext(Dispatchers.IO) {
+            try {
+                android.util.Log.d("FreaderPubReader", "Opening book: ${book.title} at ${book.filePath}")
+                val engine = ReadiumEngine(context)
+                publication = engine.openPublication(book)
+                android.util.Log.d("FreaderPubReader", "Publication opened successfully")
+            } catch (e: Exception) {
+                android.util.Log.e("FreaderPubReader", "Failed to open publication", e)
+                errorMessage = "Failed to open: ${e.message}"
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        when {
+            isLoading -> {
+                CircularProgressIndicator()
+            }
+            errorMessage != null -> {
+                Text(
+                    text = errorMessage ?: "Unknown error",
+                    modifier = Modifier.padding(32.dp),
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+            publication != null && activity != null -> {
+                ReadiumFragmentRenderer(
+                    publication = publication!!,
+                    fragmentActivity = activity,
+                    onProgressChanged = onProgressChanged,
+                    onToggleControls = onToggleControls,
+                    modifier = modifier,
+                    initialLocator = initialLocator,
+                    setNavigationCallback = setNavigationCallback
+                )
+            }
         }
     }
 }

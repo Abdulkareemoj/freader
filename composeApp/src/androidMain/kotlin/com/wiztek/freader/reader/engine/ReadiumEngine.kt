@@ -15,6 +15,9 @@ import org.readium.r2.streamer.PublicationOpener
 import org.readium.r2.streamer.parser.DefaultPublicationParser
 import org.readium.r2.shared.util.asset.AssetRetriever
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.format.FormatHints
+import org.readium.r2.shared.util.toUrl
+import org.readium.adapter.pdfium.document.PdfiumDocumentFactory
 import java.io.File
 
 /**
@@ -24,9 +27,6 @@ class ReadiumEngine(private val context: Context) {
 
     // Offline-only HttpClient
     private val offlineHttpClient = object : HttpClient {
-         suspend fun execute(request: HttpRequest): Try<HttpResponse, HttpError> {
-            throw IllegalStateException("Network access is not permitted in offline-only mode.")
-        }
         override suspend fun stream(request: HttpRequest): Try<HttpStreamResponse, HttpError> {
             throw IllegalStateException("Network access is not permitted in offline-only mode.")
         }
@@ -34,22 +34,22 @@ class ReadiumEngine(private val context: Context) {
 
     private val assetRetriever = AssetRetriever(context.contentResolver, offlineHttpClient)
     
-    // DefaultPublicationParser requires pdfFactory, passing null
-    private val publicationParser = DefaultPublicationParser(context, offlineHttpClient, assetRetriever, null)
+    // Use PdfiumDocumentFactory to support PDF files
+    private val pdfFactory = PdfiumDocumentFactory(context)
+    private val publicationParser = DefaultPublicationParser(context, offlineHttpClient, assetRetriever, pdfFactory)
     private val publicationOpener = PublicationOpener(publicationParser)
 
     suspend fun openPublication(book: LibraryBook): Publication {
         val file = File(book.filePath)
-        val url = Url(file.toURI().toURL().toString())
+        val url = file.toUrl()
         
-        // Explicitly specifying generic types for the Try result to help type inference
         val asset = assetRetriever.retrieve(
-            url as AbsoluteUrl,
-            format = TODO()
+            url,
+            formatHints = FormatHints(fileExtensions = listOf(file.extension))
         )
-            .getOrElse { throw Exception("Failed to retrieve asset") }
+            .getOrElse { throw Exception("Failed to retrieve asset: $it") }
             
         return publicationOpener.open(asset, allowUserInteraction = false)
-            .getOrElse { throw Exception("Failed to open publication") }
+            .getOrElse { throw Exception("Failed to open publication: $it") }
     }
 }
