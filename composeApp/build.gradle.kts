@@ -44,10 +44,12 @@ kotlin {
             implementation(libs.coil.mp)
             implementation(libs.koin.core.v421)
             implementation(libs.koin.compose)
-            implementation(libs.filekit.compose)
+                        implementation(libs.filekit.compose)
             implementation(libs.filekit.core)
+            implementation(libs.kotlinx.coroutines.core)
             implementation(libs.webview)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.datetime)
         }
         
         val androidMain by getting {
@@ -57,6 +59,7 @@ kotlin {
                 implementation(libs.readium.shared)
                 implementation(libs.readium.streamer)
                 implementation(libs.readium.navigator)
+                implementation(libs.readium.adapter.pdfium)
                 implementation(libs.koin.android.v421)
                 implementation(libs.commons.compress)
             }
@@ -67,6 +70,7 @@ kotlin {
                 implementation(compose.desktop.currentOs)
                 implementation(libs.commons.compress)
                 implementation(libs.kotlinx.coroutinesSwing)
+                implementation(libs.kotlinx.datetime)
                 
                 // Ktor for local book streaming
                 implementation("io.ktor:ktor-server-core:2.3.12")
@@ -78,7 +82,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.wiztek.freader"
+    namespace = "com.wiztek.freader.compose"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
