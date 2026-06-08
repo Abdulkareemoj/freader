@@ -1,8 +1,6 @@
 package com.wiztek.freader.di
 
-import coil3.ImageLoader
-import coil3.PlatformContext
-import com.android.volley.toolbox.ImageLoader
+import coil3.ImageLoader as CoilImageLoader
 import com.wiztek.freader.reader.CbzImageFetcher
 import com.wiztek.freader.settings.SettingsPersistence
 import com.wiztek.freader.settings.SettingsPersistenceImpl
@@ -19,8 +17,9 @@ import okio.FileSystem
 import okio.Path.Companion.toPath
 
 val androidAppModule = module {
-    single<ImageLoader> {
-        ImageLoader.Builder(androidContext())
+    single<FileSystem> { FileSystem.SYSTEM }
+    single<CoilImageLoader> {
+        CoilImageLoader.Builder(androidContext())
             .components {
                 add(CbzImageFetcher.Factory())
             }
