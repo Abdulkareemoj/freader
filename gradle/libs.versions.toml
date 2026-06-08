@@ -15,9 +15,9 @@ composeMultiplatform = "1.10.0"
 composeIcons = "1.7.3"
 desugar_jdk_libs = "2.1.5"
 junit = "4.13.2"
-koinAndroid = "4.2.0"
+koinAndroid = "4.2.1"
 koinAndroidVersion = "4.2.1"
-koinCore = "4.0.0"
+koinCore = "4.2.1"
 koinCoreVersion = "4.2.1"
 kotlin = "2.1.21"
 kotlinx-coroutines = "1.10.1"
@@ -36,6 +36,7 @@ kotlinx-serialization = "1.7.3"
 kotlinx-serialization-json = "1.7.3"
 volley = "1.2.1"
 webview = "2.0.3"
+toolsCore = "1.0.0-alpha14"
 
 [libraries]
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
@@ -64,6 +65,7 @@ compose-components-resources = { module = "org.jetbrains.compose.components:comp
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 compose-materialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "composeIcons" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-zipfilesystem = { module = "com.squareup.okio:okio-zipfilesystem", version.ref = "okio" }
@@ -72,6 +74,8 @@ readium-navigator = { module = "org.readium.kotlin-toolkit:readium-navigator", v
 readium-opds = { module = "org.readium.kotlin-toolkit:readium-opds", version.ref = "readiumVersion" }
 readium-shared = { module = "org.readium.kotlin-toolkit:readium-shared", version.ref = "readiumVersion" }
 readium-streamer = { module = "org.readium.kotlin-toolkit:readium-streamer", version.ref = "readiumVersion" }
+readium-adapter-pdfium = { module = "org.readium.kotlin-toolkit:readium-adapter-pdfium-navigator", version.ref = "readiumVersion" }
+readium-adapter-pdfium-document = { module = "org.readium.kotlin-toolkit:readium-adapter-pdfium-document", version.ref = "readiumVersion" }
 voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
 voyager-screenModel = { module = "cafe.adriel.voyager:voyager-screenmodel", version.ref = "voyager" }
 voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
@@ -97,6 +101,7 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 volley = { group = "com.android.volley", name = "volley", version.ref = "volley" }
 webview = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "webview" }
+androidx-tools-core = { group = "androidx.privacysandbox.tools", name = "tools-core", version.ref = "toolsCore" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

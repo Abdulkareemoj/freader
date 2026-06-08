@@ -41,7 +41,7 @@ kotlin {
             implementation(libs.sqldelight.coroutines.extensions)
             implementation(libs.commons.compress)
             api(libs.okio)
-            implementation(libs.kotlinx.datetime)
+            api(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.coil.mp)
         }
@@ -49,7 +49,7 @@ kotlin {
             implementation(libs.sqldelight.android.driver)
             implementation(libs.readium.shared)
             implementation(libs.readium.streamer)
-            implementation(libs.okio.zipfilesystem)
+            implementation(libs.readium.adapter.pdfium.document)
         }
         iosMain.dependencies {
             implementation(libs.sqldelight.native.driver)
