@@ -8,8 +8,9 @@ import coil3.fetch.FetchResult
 import coil3.fetch.Fetcher
 import coil3.fetch.SourceFetchResult
 import coil3.request.Options
+import okio.Buffer
+import okio.FileSystem
 import okio.buffer
-import okio.source
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
 import java.io.File
 import java.io.FileInputStream
@@ -35,21 +36,21 @@ class CbzImageFetcher(
         val file = File(filePath)
         if (!file.exists()) return null
 
-        val zip = ZipArchiveInputStream(FileInputStream(file))
-        
-        var entry = zip.nextEntry
-        while (entry != null) {
-            if (entry.name == entryName) {
-                return SourceFetchResult(
-                    source = zip.source().buffer() as ImageSource,
-                    mimeType = "image/jpeg",
-                    dataSource = DataSource.DISK
-                )
+        ZipArchiveInputStream(FileInputStream(file)).use { zip ->
+            var entry = zip.nextEntry
+            while (entry != null) {
+                if (entry.name == entryName) {
+                    val bytes = zip.readBytes()
+                    val buffer = Buffer().write(bytes)
+                    return SourceFetchResult(
+                        source = ImageSource(buffer, FileSystem.SYSTEM),
+                        mimeType = "image/jpeg",
+                        dataSource = DataSource.DISK
+                    )
+                }
+                entry = zip.nextEntry
             }
-            entry = zip.nextEntry
         }
-        
-        zip.close()
         return null
     }
 
