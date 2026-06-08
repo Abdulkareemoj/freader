@@ -1,7 +1,7 @@
 package com.wiztek.freader.library.model
 
 import com.wiztek.freader.reader.model.BookFormat
-import kotlin.time.Clock
+import kotlinx.datetime.Clock
 
 data class LibraryBook(
     val id: String,

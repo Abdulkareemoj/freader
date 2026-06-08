@@ -8,6 +8,6 @@ data class BookMetadata(
     val coverBytes: ByteArray? = null
 )
 
-expect class BookMetadataExtractor {
+interface BookMetadataExtractor {
     suspend fun extract(filePath: String, format: BookFormat): BookMetadata?
 }

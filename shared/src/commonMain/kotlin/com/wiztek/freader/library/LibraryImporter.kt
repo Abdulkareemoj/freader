@@ -8,6 +8,8 @@ import okio.use
 
 interface LibraryImporter {
     fun importBook(sourcePath: String): Result<String>
+    fun importBook(fileName: String, bytes: ByteArray): Result<String>
+    fun importBook(fileName: String, source: okio.Source): Result<String>
     fun saveCover(bookId: String, coverBytes: ByteArray): Result<String>
 }
 
@@ -36,6 +38,38 @@ class LibraryImporterImpl(
                 }
             }
             
+            destination.toString()
+        }
+    }
+
+    override fun importBook(fileName: String, bytes: ByteArray): Result<String> {
+        return runCatching {
+            val booksDir = appStorageDir.div("books")
+            if (!fileSystem.exists(booksDir)) {
+                fileSystem.createDirectories(booksDir)
+            }
+
+            val destination = booksDir.div(fileName)
+            fileSystem.write(destination) {
+                write(bytes)
+            }
+            destination.toString()
+        }
+    }
+
+    override fun importBook(fileName: String, source: okio.Source): Result<String> {
+        return runCatching {
+            val booksDir = appStorageDir.div("books")
+            if (!fileSystem.exists(booksDir)) {
+                fileSystem.createDirectories(booksDir)
+            }
+
+            val destination = booksDir.div(fileName)
+            fileSystem.sink(destination).buffer().use { sinkBuffer ->
+                source.buffer().use { sourceBuffer ->
+                    sinkBuffer.writeAll(sourceBuffer)
+                }
+            }
             destination.toString()
         }
     }

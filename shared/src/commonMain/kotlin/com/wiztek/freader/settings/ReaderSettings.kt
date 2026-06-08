@@ -13,5 +13,7 @@ data class ReaderSettings(
     val theme: ReaderTheme = ReaderTheme.PAPER,
     val useTwoColumns: Boolean = true,
     val lineHeight: Float = 1.5f,
-    val pageMargins: Float = 1.0f
+    val pageMargins: Float = 1.0f,
+    val wordSpacing: Float = 0.0f,
+    val letterSpacing: Float = 0.0f
 )

@@ -3,6 +3,7 @@ package com.wiztek.freader.library.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.wiztek.freader.database.FreaderDatabase
+import com.wiztek.freader.library.model.Bookmark
 import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.library.model.LibraryCollection
 import com.wiztek.freader.reader.model.BookFormat
@@ -61,9 +62,41 @@ class LibraryRepository(database: FreaderDatabase) {
         queries.updateProgress(
             progress = progress,
             lastReadLocator = locator,
-            lastReadAt = kotlin.time.Clock.System.now().toEpochMilliseconds(),
+            lastReadAt = kotlinx.datetime.Clock.System.now().toEpochMilliseconds(),
             id = id
         )
+    }
+
+    // Bookmarks
+    fun getBookmarksForBook(bookId: String): Flow<List<Bookmark>> {
+        return queries.selectAllBookmarks(bookId)
+            .asFlow()
+            .mapToList(Dispatchers.Default)
+            .map { entities ->
+                entities.map { entity ->
+                    Bookmark(
+                        id = entity.id,
+                        bookId = entity.bookId,
+                        location = entity.location,
+                        label = entity.label,
+                        createdAt = entity.createdAt
+                    )
+                }
+            }
+    }
+
+    suspend fun insertBookmark(bookmark: Bookmark) {
+        queries.insertBookmark(
+            id = bookmark.id,
+            bookId = bookmark.bookId,
+            location = bookmark.location,
+            label = bookmark.label,
+            createdAt = bookmark.createdAt
+        )
+    }
+
+    suspend fun deleteBookmark(id: String) {
+        queries.deleteBookmark(id)
     }
 
     // Collections
