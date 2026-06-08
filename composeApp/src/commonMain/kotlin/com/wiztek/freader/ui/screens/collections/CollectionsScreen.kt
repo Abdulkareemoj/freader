@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,6 +35,7 @@ fun CollectionsScreen(
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("All", "Shared", "Device Only")
     var showCreateDialog by remember { mutableStateOf(false) }
+    var collectionToDelete by remember { mutableStateOf<LibraryCollection?>(null) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         PrimaryTabRow(
@@ -78,7 +81,8 @@ fun CollectionsScreen(
                     items(state.collections) { collection ->
                         CollectionCard(
                             collection = collection,
-                            onClick = { navigator.push(CollectionDetailsScreen(collection)) }
+                            onClick = { navigator.push(CollectionDetailsScreen(collection)) },
+                            onDelete = { viewModel.deleteCollection(collection.id) }
                         )
                     }
                 }
@@ -109,7 +113,13 @@ fun CollectionsScreen(
 }
 
 @Composable
-fun CollectionCard(collection: LibraryCollection, onClick: () -> Unit) {
+fun CollectionCard(
+    collection: LibraryCollection,
+    onClick: () -> Unit,
+    onDelete: () -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Column(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Box(
             modifier = Modifier
@@ -117,15 +127,54 @@ fun CollectionCard(collection: LibraryCollection, onClick: () -> Unit) {
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.secondaryContainer)
-                .padding(12.dp),
-            contentAlignment = Alignment.Center
+                .padding(12.dp)
         ) {
-            Icon(Icons.Default.Bookmark, null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.5f))
+            Icon(
+                Icons.Default.Bookmark,
+                null,
+                modifier = Modifier.size(48.dp).align(Alignment.Center),
+                tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.5f)
+            )
+
+            Box(modifier = Modifier.align(Alignment.TopEnd)) {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = "Collection options",
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Delete Collection") },
+                        onClick = {
+                            onDelete()
+                            showMenu = false
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    )
+                }
+            }
         }
         
         Spacer(Modifier.height(8.dp))
         
-        Text(collection.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(
+            collection.name,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+        )
     }
 }
 

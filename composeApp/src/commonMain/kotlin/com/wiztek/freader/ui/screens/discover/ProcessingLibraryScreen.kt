@@ -1,6 +1,5 @@
 package com.wiztek.freader.ui.screens.discover
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoStories
@@ -8,33 +7,45 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
+import org.koin.compose.koinInject
 
 @Composable
 fun ProcessingLibraryScreen(
-    onFinish: () -> Unit
+    onFinish: () -> Unit,
+    screenModel: DiscoverScreenModel = koinInject()
 ) {
-    var progress by remember { mutableStateOf(0f) }
-    var currentFileName by remember { mutableStateOf("Scanning files...") }
+    val state by screenModel.importState.collectAsState()
 
-    // Mock processing logic
-    LaunchedEffect(Unit) {
-        val files = listOf("Moby_Dick.epub", "SpiderMan_Vol1.cbz", "Clean_Code.pdf", "Berserk_Ch1.cbr")
-        for (file in files) {
-            currentFileName = "Extracting $file"
-            repeat(25) {
-                delay(40)
-                progress += 0.01f
+    if (state.showResult) {
+        AlertDialog(
+            onDismissRequest = {
+                screenModel.dismissResult()
+                onFinish()
+            },
+            title = { Text("Import Complete") },
+            text = {
+                if (state.failCount > 0) {
+                    Text(
+                        "Successfully imported ${state.successCount} of ${state.totalFiles} files.\n" +
+                        "${state.failCount} file(s) failed to import."
+                    )
+                } else {
+                    Text("All ${state.successCount} file(s) imported successfully!")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    screenModel.dismissResult()
+                    onFinish()
+                }) {
+                    Text("OK")
+                }
             }
-        }
-        currentFileName = "Finalizing library..."
-        delay(500)
-        onFinish()
+        )
     }
 
     Box(
@@ -45,17 +56,6 @@ fun ProcessingLibraryScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(32.dp)
         ) {
-            // Animated Icon
-            val infiniteTransition = rememberInfiniteTransition()
-            val rotation by infiniteTransition.animateFloat(
-                initialValue = 0f,
-                targetValue = 360f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(2000, easing = LinearEasing),
-                    repeatMode = RepeatMode.Restart
-                )
-            )
-
             Icon(
                 imageVector = Icons.Default.AutoStories,
                 contentDescription = null,
@@ -77,24 +77,30 @@ fun ProcessingLibraryScreen(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                text = currentFileName,
+                text = if (state.totalFiles > 0) "File ${state.processedFiles} of ${state.totalFiles}" else "Preparing...",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                text = state.currentFile,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                maxLines = 1
             )
 
             Spacer(Modifier.height(48.dp))
 
-            // Circular loading with percentage
             Box(contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
-                    progress = { progress },
+                    progress = { state.progress },
                     modifier = Modifier.size(100.dp),
                     strokeWidth = 8.dp,
-                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+                    strokeCap = StrokeCap.Round
                 )
                 Text(
-                    text = "${(progress * 100).toInt()}%",
+                    text = "${(state.progress * 100).toInt()}%",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )

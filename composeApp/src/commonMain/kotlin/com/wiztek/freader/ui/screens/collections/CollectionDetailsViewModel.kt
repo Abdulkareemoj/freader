@@ -41,4 +41,10 @@ class CollectionDetailsViewModel(
             repository.removeBookFromCollection(collectionId, bookId)
         }
     }
+
+    fun deleteCollection() {
+        screenModelScope.launch {
+            repository.deleteCollection(collectionId)
+        }
+    }
 }

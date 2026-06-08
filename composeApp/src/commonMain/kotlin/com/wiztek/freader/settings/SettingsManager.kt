@@ -50,4 +50,29 @@ object SettingsManager {
         _settings.update { it.copy(theme = theme) }
         save()
     }
+
+    fun setUseTwoColumns(enabled: Boolean) {
+        _settings.update { it.copy(useTwoColumns = enabled) }
+        save()
+    }
+
+    fun setLineHeight(height: Float) {
+        _settings.update { it.copy(lineHeight = height) }
+        save()
+    }
+
+    fun setPageMargins(margins: Float) {
+        _settings.update { it.copy(pageMargins = margins) }
+        save()
+    }
+
+    fun setWordSpacing(spacing: Float) {
+        _settings.update { it.copy(wordSpacing = spacing) }
+        save()
+    }
+
+    fun setLetterSpacing(spacing: Float) {
+        _settings.update { it.copy(letterSpacing = spacing) }
+        save()
+    }
 }

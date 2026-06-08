@@ -78,6 +78,26 @@ fun ReaderSettingsSheet(onDismiss: () -> Unit) {
                 onValueChange = { SettingsManager.setPageMargins(it) },
                 valueRange = 0.5f..2.5f
             )
+
+            Spacer(Modifier.height(16.dp))
+
+            // Word Spacing
+            Text("Word Spacing", style = MaterialTheme.typography.labelLarge)
+            Slider(
+                value = settings.wordSpacing,
+                onValueChange = { SettingsManager.setWordSpacing(it) },
+                valueRange = -0.5f..1.0f
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            // Letter Spacing
+            Text("Letter Spacing", style = MaterialTheme.typography.labelLarge)
+            Slider(
+                value = settings.letterSpacing,
+                onValueChange = { SettingsManager.setLetterSpacing(it) },
+                valueRange = -0.1f..0.5f
+            )
         }
     }
 }

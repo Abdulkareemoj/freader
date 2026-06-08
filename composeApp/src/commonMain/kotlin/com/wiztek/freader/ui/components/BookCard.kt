@@ -2,6 +2,7 @@ package com.wiztek.freader.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,11 +25,13 @@ import coil3.compose.AsyncImage
 import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.reader.model.BookFormat
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun BookCard(
     book: LibraryBook,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
     showProgress: Boolean = true
 ) {
     Card(
@@ -36,7 +39,16 @@ fun BookCard(
             .fillMaxWidth()
             .height(240.dp)
             .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick),
+            .let { 
+                if (onLongClick != null) {
+                    it.combinedClickable(
+                        onClick = onClick,
+                        onLongClick = onLongClick
+                    )
+                } else {
+                    it.clickable(onClick = onClick)
+                }
+            },
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {

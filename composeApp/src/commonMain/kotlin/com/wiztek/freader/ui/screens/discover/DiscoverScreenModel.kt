@@ -8,9 +8,26 @@ import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.library.repository.LibraryRepository
 import com.wiztek.freader.reader.model.BookFormat
 import io.github.vinceglb.filekit.core.PlatformFile
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+
+data class ImportProgress(
+    val currentFile: String = "",
+    val progress: Float = 0f,
+    val totalFiles: Int = 0,
+    val processedFiles: Int = 0,
+    val isImporting: Boolean = false,
+    val successCount: Int = 0,
+    val failCount: Int = 0,
+    val showResult: Boolean = false
+)
 
 class DiscoverScreenModel(
     private val importer: LibraryImporter,
@@ -18,47 +35,87 @@ class DiscoverScreenModel(
     private val metadataExtractor: BookMetadataExtractor
 ) : ScreenModel {
 
-    private val _isImporting = MutableStateFlow(false)
-    val isImporting = _isImporting.asStateFlow()
+    private val _importState = MutableStateFlow(ImportProgress())
+    val importState = _importState.asStateFlow()
 
-    fun importFile(file: PlatformFile) {
+    fun importFiles(files: List<PlatformFile>) {
         screenModelScope.launch {
-            _isImporting.value = true
-            try {
-                val path = file.path ?: return@launch
-                val format = extractFormat(file.name)
+            println("Freader: Starting import of ${files.size} files")
+            _importState.update { it.copy(
+                isImporting = true, totalFiles = files.size, processedFiles = 0,
+                successCount = 0, failCount = 0, showResult = false
+            ) }
+            
+            files.forEachIndexed { index, file ->
+                val fileName = file.name
+                println("Freader: Processing file $index: $fileName")
+                _importState.update { it.copy(currentFile = fileName, progress = index.toFloat() / files.size) }
                 
-                // 1. Copy file to internal storage
-                val internalPath = importer.importBook(path).getOrThrow()
-                
-                // 2. Extract metadata
-                val metadata = metadataExtractor.extract(internalPath, format)
-                val bookId = kotlin.time.Clock.System.now().toEpochMilliseconds().toString()
+                var success = false
+                try {
+                    val format = extractFormat(fileName)
+                    println("Freader: Format identified as $format")
+                    
+                    println("Freader: Reading bytes for $fileName...")
+                    val bytes = file.readBytes()
+                    println("Freader: Read ${bytes.size} bytes")
+                    
+                    withContext(Dispatchers.IO) {
+                        println("Freader: Importing to internal storage...")
+                        val result = importer.importBook(fileName, bytes)
+                        val internalPath = result.getOrThrow()
+                        println("Freader: Imported to $internalPath")
+                        
+                        println("Freader: Extracting metadata...")
+                        val metadata = metadataExtractor.extract(internalPath, format)
+                        println("Freader: Metadata extraction finished")
+                        
+                        val now = Clock.System.now()
+                        val bookId = now.toEpochMilliseconds().toString() + "_$index"
 
-                // 3. Save cover if available
-                val coverPath = metadata?.coverBytes?.let { bytes ->
-                    importer.saveCover(bookId, bytes).getOrNull()
+                        val coverPath = metadata?.coverBytes?.let { coverBytes ->
+                            println("Freader: Saving cover...")
+                            importer.saveCover(bookId, coverBytes).getOrNull()
+                        }
+                        
+                        println("Freader: Saving to database...")
+                        val book = LibraryBook(
+                            id = bookId,
+                            title = metadata?.title ?: fileName,
+                            author = metadata?.author ?: "Unknown",
+                            format = format,
+                            filePath = internalPath,
+                            coverPath = coverPath,
+                            progress = 0.0,
+                            lastReadLocator = null,
+                            addedAt = now.toEpochMilliseconds()
+                        )
+                        repository.insertBook(book)
+                        println("Freader: Successfully imported $fileName")
+                    }
+                    success = true
+                } catch (e: Exception) {
+                    println("Freader: Failed to import $fileName: ${e.message}")
+                    e.printStackTrace()
+                } finally {
+                    _importState.update {
+                        it.copy(
+                            processedFiles = index + 1,
+                            successCount = it.successCount + if (success) 1 else 0,
+                            failCount = it.failCount + if (success) 0 else 1
+                        )
+                    }
+                    println("Freader: Finished loop for $fileName, processedFiles: ${index + 1}")
                 }
-                
-                // 4. Add to database
-                val book = LibraryBook(
-                    id = bookId,
-                    title = metadata?.title ?: file.name,
-                    author = metadata?.author ?: "Unknown",
-                    format = format,
-                    filePath = internalPath,
-                    coverPath = coverPath,
-                    progress = 0.0,
-                    addedAt = kotlin.time.Clock.System.now().toEpochMilliseconds()
-                )
-                repository.insertBook(book)
-                
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                _isImporting.value = false
             }
+            
+            _importState.update { it.copy(isImporting = false, progress = 1f, showResult = true) }
+            println("Freader: All imports finished")
         }
+    }
+
+    fun dismissResult() {
+        _importState.update { it.copy(showResult = false) }
     }
 
     private fun extractFormat(fileName: String): BookFormat {

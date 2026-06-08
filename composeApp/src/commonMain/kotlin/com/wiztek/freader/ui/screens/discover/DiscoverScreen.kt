@@ -1,7 +1,6 @@
 package com.wiztek.freader.ui.screens.discover
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,6 +16,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.wiztek.freader.ui.components.SectionHeader
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import com.wiztek.freader.navigation.VoyagerScreen
 import io.github.vinceglb.filekit.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.core.PickerMode
 import io.github.vinceglb.filekit.core.PickerType
@@ -27,13 +29,15 @@ fun DiscoverScreen(
     screenModel: DiscoverScreenModel
 ) {
     val scope = rememberCoroutineScope()
+    val navigator = LocalNavigator.currentOrThrow
     
     val launcher = rememberFilePickerLauncher(
         type = PickerType.File(extensions = listOf("epub", "pdf", "txt", "cbz", "cbr", "mobi")),
-        mode = PickerMode.Single
-    ) { file ->
-        file?.let {
-            screenModel.importFile(it)
+        mode = PickerMode.Multiple()
+    ) { files ->
+        if (files != null && files.isNotEmpty()) {
+            screenModel.importFiles(files)
+            navigator.push(VoyagerScreen.ProcessingLibrary)
         }
     }
 

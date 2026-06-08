@@ -2,6 +2,7 @@ package com.wiztek.freader.ui.screens.reader
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.wiztek.freader.library.model.Bookmark
 import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.library.repository.LibraryRepository
 import com.wiztek.freader.reader.ReaderStrategyFactory
@@ -11,11 +12,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 
 data class ReaderState(
     val book: LibraryBook? = null,
     val manifest: ReadiumManifest? = null,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val bookmarks: List<Bookmark> = emptyList()
 )
 
 class ReaderScreenModel(
@@ -29,6 +32,7 @@ class ReaderScreenModel(
 
     init {
         loadBook()
+        loadBookmarks()
     }
 
     private fun loadBook() {
@@ -49,9 +53,35 @@ class ReaderScreenModel(
         }
     }
 
+    private fun loadBookmarks() {
+        screenModelScope.launch {
+            repository.getBookmarksForBook(bookId).collect { bookmarks ->
+                _state.update { it.copy(bookmarks = bookmarks) }
+            }
+        }
+    }
+
     fun saveProgress(progress: Double, locator: String?) {
         screenModelScope.launch {
             repository.updateProgress(bookId, progress, locator)
+        }
+    }
+
+    fun addBookmark(locator: String, label: String = "Bookmark") {
+        screenModelScope.launch {
+            val bookmark = Bookmark(
+                id = kotlinx.datetime.Clock.System.now().toEpochMilliseconds().toString(),
+                bookId = bookId,
+                location = locator,
+                label = label
+            )
+            repository.insertBookmark(bookmark)
+        }
+    }
+
+    fun removeBookmark(bookmarkId: String) {
+        screenModelScope.launch {
+            repository.deleteBookmark(bookmarkId)
         }
     }
 }

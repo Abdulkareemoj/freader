@@ -21,10 +21,11 @@ class HomeViewModel(
         screenModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             repository.getAllBooks().collect { allBooks ->
+                val validBooks = allBooks.filter { it.filePath.isNotBlank() }
                 _state.update { 
                     it.copy(
-                        trendingBooks = allBooks.take(5), 
-                        recentBooks = allBooks,
+                        trendingBooks = validBooks.take(5), 
+                        recentBooks = validBooks,
                         isLoading = false
                     )
                 }

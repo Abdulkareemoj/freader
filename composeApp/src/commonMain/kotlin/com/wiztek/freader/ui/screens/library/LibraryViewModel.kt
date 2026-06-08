@@ -25,7 +25,7 @@ class LibraryViewModel(
         screenModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             repository.getAllBooks().collect { books ->
-                allBooks = books
+                allBooks = books.filter { it.filePath.isNotBlank() }
                 updateState()
             }
         }

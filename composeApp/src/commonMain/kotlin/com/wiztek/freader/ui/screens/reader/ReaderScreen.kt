@@ -23,13 +23,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.wiztek.freader.library.model.Bookmark
 import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.reader.model.ReadiumManifest
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import com.wiztek.freader.ui.components.reader.PublicationReader
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 data class ReaderScreen(
     val book: LibraryBook
@@ -37,7 +41,7 @@ data class ReaderScreen(
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val screenModel = koinScreenModel<ReaderScreenModel> { parametersOf(book.id) }
+        val screenModel = koinInject<ReaderScreenModel> { parametersOf(book.id) }
         val state by screenModel.state.collectAsState()
         
         var navigateToHref: ((String) -> Unit)? by remember { mutableStateOf(null) }
@@ -45,6 +49,7 @@ data class ReaderScreen(
         ReaderScreenContent(
             book = state.book ?: book,
             manifest = state.manifest,
+            bookmarks = state.bookmarks,
             onBack = { 
                 navigator.pop()
             },
@@ -53,6 +58,14 @@ data class ReaderScreen(
             },
             onSaveProgress = { progress, locator ->
                 screenModel.saveProgress(progress, locator)
+            },
+            onAddBookmark = { locator ->
+                val existing = state.bookmarks.find { it.location == locator }
+                if (existing != null) {
+                    screenModel.removeBookmark(existing.id)
+                } else {
+                    screenModel.addBookmark(locator)
+                }
             },
             setNavigationCallback = { callback ->
                 navigateToHref = callback
@@ -66,14 +79,17 @@ data class ReaderScreen(
 fun ReaderScreenContent(
     book: LibraryBook,
     manifest: ReadiumManifest?,
+    bookmarks: List<Bookmark>,
     onBack: () -> Unit,
     onTOC: (String) -> Unit,
     onSaveProgress: (Double, String?) -> Unit,
+    onAddBookmark: (String) -> Unit,
     setNavigationCallback: (((String) -> Unit)?) -> Unit
 ) {
     var showControls by remember { mutableStateOf(true) }
     var showSettings by remember { mutableStateOf(false) }
     var showTOC by remember { mutableStateOf(false) }
+    var currentLocatorJson by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -90,8 +106,14 @@ fun ReaderScreenContent(
                         }
                     },
                     actions = {
-                        IconButton(onClick = { /* TODO */ }) {
-                            Icon(Icons.Default.BookmarkBorder, "Bookmark")
+                        val isBookmarked = currentLocatorJson != null && bookmarks.any { it.location == currentLocatorJson }
+                        IconButton(onClick = { 
+                            currentLocatorJson?.let { onAddBookmark(it) }
+                        }) {
+                            Icon(
+                                if (isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                                contentDescription = if (isBookmarked) "Remove Bookmark" else "Add Bookmark"
+                            )
                         }
                         IconButton(onClick = { showSettings = true }) {
                             Icon(Icons.Default.TextFields, "Font Settings")
@@ -121,6 +143,7 @@ fun ReaderScreenContent(
                 book = book,
                 modifier = Modifier.fillMaxSize(),
                 onProgressChanged = { progress, locator -> 
+                    currentLocatorJson = locator
                     onSaveProgress(progress, locator)
                 },
                 onToggleControls = { showControls = !showControls },
@@ -132,20 +155,71 @@ fun ReaderScreenContent(
             ReaderSettingsSheet(onDismiss = { showSettings = false })
         }
 
-        if (showTOC && manifest != null) {
+        if (showTOC) {
             ModalBottomSheet(onDismissRequest = { showTOC = false }) {
-                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                    Text("Table of Contents", style = MaterialTheme.typography.titleLarge)
-                    Spacer(Modifier.height(16.dp))
-                    LazyColumn {
-                        items(manifest.toc) { item ->
-                            ListItem(
-                                headlineContent = { Text(item.title ?: item.href) },
-                                modifier = Modifier.clickable {
-                                    onTOC(item.href)
-                                    showTOC = false
+                var selectedTab by remember { mutableStateOf(0) }
+                Column(modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)) {
+                    TabRow(selectedTabIndex = selectedTab) {
+                        Tab(
+                            selected = selectedTab == 0,
+                            onClick = { selectedTab = 0 },
+                            text = { Text("Contents") }
+                        )
+                        Tab(
+                            selected = selectedTab == 1,
+                            onClick = { selectedTab = 1 },
+                            text = { Text("Bookmarks") }
+                        )
+                    }
+
+                    when (selectedTab) {
+                        0 -> {
+                            if (manifest != null) {
+                                LazyColumn {
+                                    items(manifest.toc) { item ->
+                                        ListItem(
+                                            headlineContent = { Text(item.title ?: item.href) },
+                                            modifier = Modifier.clickable {
+                                                onTOC(item.href)
+                                                showTOC = false
+                                            }
+                                        )
+                                    }
                                 }
-                            )
+                            } else {
+                                Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                                    Text("No table of contents available")
+                                }
+                            }
+                        }
+                        1 -> {
+                            if (bookmarks.isNotEmpty()) {
+                                LazyColumn {
+                                    items(bookmarks) { bookmark ->
+                                        ListItem(
+                                            headlineContent = { Text(bookmark.label) },
+                                            supportingContent = { 
+                                                val date = Instant.fromEpochMilliseconds(bookmark.createdAt)
+                                                    .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                                                Text("Saved at $date")
+                                            },
+                                            trailingContent = {
+                                                IconButton(onClick = { onAddBookmark(bookmark.location) }) {
+                                                    Icon(Icons.Default.Delete, "Remove")
+                                                }
+                                            },
+                                            modifier = Modifier.clickable {
+                                                onTOC(bookmark.location)
+                                                showTOC = false
+                                            }
+                                        )
+                                    }
+                                }
+                            } else {
+                                Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                                    Text("No bookmarks yet")
+                                }
+                            }
                         }
                     }
                 }
