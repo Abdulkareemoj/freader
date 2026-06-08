@@ -1,8 +1,11 @@
 package com.wiztek.freader.library
 
 import com.wiztek.freader.reader.model.BookFormat
+import com.wiztek.freader.reader.openZip
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okio.FileSystem
+import okio.Path.Companion.toPath
 import org.apache.commons.compress.archivers.zip.ZipFile
 import java.io.File
 
@@ -31,9 +34,8 @@ class JvmBookMetadataExtractor : BookMetadataExtractor {
                 .sortedBy { it.name }
                 .toList()
 
-            // Try to find a cover image (often named cover, folder, or the first image)
             val coverEntry = entries.find { it.name.contains("cover", ignoreCase = true) } ?: entries.firstOrNull()
-            
+
             coverEntry?.let { entry ->
                 zipFile.getInputStream(entry).use { it.readBytes() }.also { coverBytes = it }
             }
@@ -42,10 +44,36 @@ class JvmBookMetadataExtractor : BookMetadataExtractor {
         return BookMetadata(title, null, coverBytes)
     }
 
-    private fun extractEpubMetadata(filePath: String): BookMetadata {
-        // Simple placeholder for EPUB metadata extraction on JVM
-        // In a real implementation, you'd parse the OPF file inside the EPUB
-        return BookMetadata(File(filePath).nameWithoutExtension, null)
+    private fun extractEpubMetadata(filePath: String): BookMetadata? {
+        val path = filePath.toPath()
+        val fs = FileSystem.SYSTEM
+
+        return try {
+            val zipFs = openZip(fs, path)
+            var title = path.name.substringBeforeLast(".")
+
+            var coverBytes: ByteArray? = null
+            val coverCandidates = listOf(
+                "cover.jpg", "cover.jpeg", "OEBPS/cover.jpg", "OEBPS/images/cover.jpg",
+                "OPS/cover.jpg", "OPS/images/cover.jpg", "cover.png"
+            )
+
+            for (candidate in coverCandidates) {
+                val candidatePath = candidate.toPath()
+                if (zipFs.exists(candidatePath)) {
+                    coverBytes = zipFs.read(candidatePath) { readByteArray() }
+                    break
+                }
+            }
+
+            BookMetadata(
+                title = title,
+                author = "Unknown Author",
+                coverBytes = coverBytes
+            )
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private fun isImage(name: String): Boolean {
