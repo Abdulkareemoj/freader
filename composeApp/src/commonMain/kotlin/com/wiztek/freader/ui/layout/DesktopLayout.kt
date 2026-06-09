@@ -16,15 +16,21 @@ import com.wiztek.freader.navigation.*
 fun DesktopLayout(navigator: Navigator) {
     var collapsed by remember { mutableStateOf(false) }
 
-    // Helper to get current AppScreen enum from Voyager Screen
-    val currentScreen = when (navigator.lastItem) {
+    val currentScreen = when (val last = navigator.lastItem) {
         is VoyagerScreen.Home -> AppScreen.Home
         is VoyagerScreen.Library -> AppScreen.Library
         is VoyagerScreen.Discover -> AppScreen.Discover
         is VoyagerScreen.Collections -> AppScreen.Collections
+        is VoyagerScreen.CollectionDetails -> AppScreen.Collections
         is VoyagerScreen.Stats -> AppScreen.Stats
         is VoyagerScreen.Settings -> AppScreen.Settings
         is VoyagerScreen.About -> AppScreen.About
+        is VoyagerScreen.Reader, is VoyagerScreen.ComicReader,
+            is VoyagerScreen.BookDetails, is VoyagerScreen.BookGrid,
+            is VoyagerScreen.RecentlyRead, is VoyagerScreen.BookMetadataEditor,
+            is VoyagerScreen.SeriesDetails, is VoyagerScreen.ReaderContents,
+            is VoyagerScreen.Player -> AppScreen.Library
+        is VoyagerScreen.ProcessingLibrary, is VoyagerScreen.Search -> AppScreen.Discover
         else -> AppScreen.Home
     }
 

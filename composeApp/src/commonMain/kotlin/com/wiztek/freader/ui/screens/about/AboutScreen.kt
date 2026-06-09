@@ -1,6 +1,5 @@
 package com.wiztek.freader.ui.screens.about
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,7 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +29,15 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 @Composable
 fun AboutScreen() {
     val navigator = LocalNavigator.currentOrThrow
+    val snackbarHostState = remember { SnackbarHostState() }
+    var linkAction by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(linkAction) {
+        linkAction?.let {
+            snackbarHostState.showSnackbar(it)
+            linkAction = null
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -41,7 +49,8 @@ fun AboutScreen() {
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -51,7 +60,6 @@ fun AboutScreen() {
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // App Icon / Logo
             Box(
                 modifier = Modifier
                     .size(100.dp)
@@ -98,21 +106,45 @@ fun AboutScreen() {
 
             Spacer(Modifier.height(40.dp))
 
-            // Links / Actions
-            AboutActionRow(Icons.Default.Language, "Official Website", "freader.app")
-            AboutActionRow(Icons.Default.Code, "Source Code", "GitHub / wiztek")
-            AboutActionRow(Icons.Default.BugReport, "Report a Bug", "Issue Tracker")
-            AboutActionRow(Icons.Default.Mail, "Contact Us", "hello@freader.app")
+            AboutActionRow(
+                icon = Icons.Default.Language,
+                title = "Official Website",
+                value = "freader.app",
+                onClick = { linkAction = "Opening freader.app..." }
+            )
+            AboutActionRow(
+                icon = Icons.Default.Code,
+                title = "Source Code",
+                value = "GitHub / wiztek",
+                onClick = { linkAction = "Opening GitHub repository..." }
+            )
+            AboutActionRow(
+                icon = Icons.Default.BugReport,
+                title = "Report a Bug",
+                value = "Issue Tracker",
+                onClick = { linkAction = "Opening issue tracker..." }
+            )
+            AboutActionRow(
+                icon = Icons.Default.Mail,
+                title = "Contact Us",
+                value = "hello@freader.app",
+                onClick = { linkAction = "Opening mail client..." }
+            )
+            AboutActionRow(
+                icon = Icons.Default.Info,
+                title = "Open Source Licenses",
+                value = "Apache 2.0, MIT",
+                onClick = { linkAction = "Opening licenses..." }
+            )
 
             Spacer(Modifier.height(40.dp))
 
-            // Footer / Legal
             Text(
                 "© 2024 Wiztek. All rights reserved.",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
             )
-            
+
             Text(
                 "Licensed under MIT License",
                 style = MaterialTheme.typography.labelSmall,
@@ -124,9 +156,14 @@ fun AboutScreen() {
 }
 
 @Composable
-fun AboutActionRow(icon: ImageVector, title: String, value: String) {
+fun AboutActionRow(
+    icon: ImageVector,
+    title: String,
+    value: String,
+    onClick: () -> Unit
+) {
     Surface(
-        onClick = { /* TODO: Open Link */ },
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)

@@ -13,13 +13,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.wiztek.freader.library.model.LibraryBook
 import com.wiztek.freader.ui.components.BookCard
+import com.wiztek.freader.ui.components.CardMenuAction
 import kotlin.math.absoluteValue
 
 @Composable
 fun HomeCarousel(
     books: List<LibraryBook>,
+    title: String = "Recently Read",
     onBookClick: (LibraryBook) -> Unit,
-    onSeeAllClick: () -> Unit = {}
+    onSeeAllClick: () -> Unit = {},
+    onBookLongClick: ((LibraryBook) -> Unit)? = null,
+    isSelectionMode: Boolean = false,
+    isSelected: (LibraryBook) -> Boolean = { false },
+    menuItems: (LibraryBook) -> List<CardMenuAction> = { emptyList() }
 ) {
     if (books.isEmpty()) return
 
@@ -34,7 +40,7 @@ fun HomeCarousel(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Trending books",
+                text = title,
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
             )
             TextButton(onClick = onSeeAllClick) {
@@ -55,6 +61,10 @@ fun HomeCarousel(
             BookCard(
                 book = book,
                 onClick = { onBookClick(book) },
+                onLongClick = onBookLongClick?.let { { it(book) } },
+                isSelectionMode = isSelectionMode,
+                isSelected = isSelected(book),
+                menuItems = menuItems(book),
                 showProgress = true,
                 modifier = Modifier
                     .fillMaxWidth()

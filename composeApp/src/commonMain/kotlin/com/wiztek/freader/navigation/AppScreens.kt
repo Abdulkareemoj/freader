@@ -11,6 +11,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.wiztek.freader.library.model.LibraryBook
+import com.wiztek.freader.library.model.LibraryCollection
 import com.wiztek.freader.library.repository.LibraryRepository
 import com.wiztek.freader.reader.model.BookFormat
 import com.wiztek.freader.ui.screens.about.AboutScreen
@@ -30,6 +31,8 @@ import com.wiztek.freader.ui.screens.player.PlayerScreen
 import com.wiztek.freader.ui.screens.search.SearchScreen
 import com.wiztek.freader.ui.screens.reader.ReaderScreen
 import com.wiztek.freader.ui.screens.reader.ComicReaderScreen
+import com.wiztek.freader.ui.screens.reader.RecentlyReadScreen
+import com.wiztek.freader.ui.screens.reader.BookGridScreen
 import com.wiztek.freader.ui.screens.reader.ReaderContentsScreen
 import com.wiztek.freader.ui.screens.stats.StatsScreen
 import org.koin.core.parameter.parametersOf
@@ -55,9 +58,18 @@ sealed class VoyagerScreen : Screen {
             val repository = koinInject<LibraryRepository>()
             val viewModel = remember { HomeViewModel(repository) }
             val state by viewModel.state.collectAsState()
+            val collections by viewModel.collections.collectAsState()
 
             HomeScreen(
-                books = state.recentBooks
+                recentlyReadBooks = state.recentlyReadBooks,
+                newlyAddedBooks = state.newlyAddedBooks,
+                recentBooks = state.recentBooks,
+                repository = repository,
+                collections = collections,
+                onDeleteBooks = { viewModel.deleteBooks(it) },
+                onRenameBook = { id, title -> viewModel.renameBook(id, title) },
+                onAddToCollection = { cid, bids -> viewModel.addToCollection(cid, bids) },
+                onCreateCollection = { viewModel.createCollection(it) }
             )
         }
     }
@@ -69,9 +81,11 @@ sealed class VoyagerScreen : Screen {
             val repository = koinInject<LibraryRepository>()
             val viewModel = remember { LibraryViewModel(repository) }
             val state by viewModel.state.collectAsState()
+            val collections by viewModel.collections.collectAsState()
 
             LibraryScreen(
                 state = state,
+                collections = collections,
                 onImportClick = { navigator.push(ProcessingLibrary) },
                 onBookClick = { book -> 
                     val sName = book.seriesName
@@ -82,7 +96,11 @@ sealed class VoyagerScreen : Screen {
                     }
                 },
                 onSortOrderChange = { viewModel.onSortOrderChange(it) },
-                onFilterFormatChange = { viewModel.onFilterFormatChange(it) }
+                onFilterFormatChange = { viewModel.onFilterFormatChange(it) },
+                onDeleteBooks = { viewModel.deleteBooks(it) },
+                onRenameBook = { id, title -> viewModel.renameBook(id, title) },
+                onAddToCollection = { cid, bids -> viewModel.addToCollection(cid, bids) },
+                onCreateCollection = { viewModel.createCollection(it) }
             )
         }
     }
@@ -149,6 +167,20 @@ sealed class VoyagerScreen : Screen {
         }
     }
 
+    data class RecentlyRead(val books: List<LibraryBook>) : VoyagerScreen() {
+        @Composable
+        override fun Content() {
+            BookGridScreen(title = "Recently Read", books = books)
+        }
+    }
+
+    data class BookGrid(val title: String, val books: List<LibraryBook>) : VoyagerScreen() {
+        @Composable
+        override fun Content() {
+            BookGridScreen(title = title, books = books)
+        }
+    }
+
     data class ComicReader(val book: LibraryBook) : VoyagerScreen() {
         @Composable
         override fun Content() {
@@ -206,6 +238,13 @@ sealed class VoyagerScreen : Screen {
             com.wiztek.freader.ui.screens.discover.DiscoverScreen(
                 screenModel = screenModel
             )
+        }
+    }
+
+    data class CollectionDetails(val collection: LibraryCollection) : VoyagerScreen() {
+        @Composable
+        override fun Content() {
+            com.wiztek.freader.ui.screens.collections.CollectionDetailsScreen(collection = collection).Content()
         }
     }
 

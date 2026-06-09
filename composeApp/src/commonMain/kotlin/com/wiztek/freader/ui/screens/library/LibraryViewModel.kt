@@ -2,23 +2,28 @@ package com.wiztek.freader.ui.screens.library
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import com.wiztek.freader.library.model.LibraryCollection
 import com.wiztek.freader.library.repository.LibraryRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import com.wiztek.freader.library.model.LibraryBook
+import kotlinx.datetime.Clock
 
 class LibraryViewModel(
     private val repository: LibraryRepository
 ) : ScreenModel {
 
-    // Cache for all books to filter without re-collecting flow
     private var allBooks = listOf<LibraryBook>()
     
     private val _state = MutableStateFlow(LibraryState())
     val state = _state.asStateFlow()
 
+    private val _collections = MutableStateFlow<List<LibraryCollection>>(emptyList())
+    val collections = _collections.asStateFlow()
+
     init {
         loadBooks()
+        loadCollections()
     }
 
     private fun loadBooks() {
@@ -27,6 +32,14 @@ class LibraryViewModel(
             repository.getAllBooks().collect { books ->
                 allBooks = books.filter { it.filePath.isNotBlank() }
                 updateState()
+            }
+        }
+    }
+
+    private fun loadCollections() {
+        screenModelScope.launch {
+            repository.getAllCollections().collect { cols ->
+                _collections.value = cols
             }
         }
     }
@@ -70,5 +83,34 @@ class LibraryViewModel(
                 else -> compareByDescending { it.addedAt }
             }
         )
+    }
+
+    fun deleteBooks(ids: Set<String>) {
+        screenModelScope.launch {
+            ids.forEach { repository.deleteBook(it) }
+        }
+    }
+
+    fun renameBook(id: String, newTitle: String) {
+        screenModelScope.launch {
+            repository.renameBook(id, newTitle)
+        }
+    }
+
+    fun addToCollection(collectionId: String, bookIds: Set<String>) {
+        screenModelScope.launch {
+            bookIds.forEach { repository.addBookToCollection(collectionId, it) }
+        }
+    }
+
+    fun createCollection(name: String) {
+        screenModelScope.launch {
+            val collection = LibraryCollection(
+                id = Clock.System.now().toEpochMilliseconds().toString(),
+                name = name,
+                createdAt = Clock.System.now().toEpochMilliseconds()
+            )
+            repository.insertCollection(collection)
+        }
     }
 }

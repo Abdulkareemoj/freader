@@ -19,9 +19,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.wiztek.freader.settings.ReaderTheme
 import com.wiztek.freader.settings.SettingsManager
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,6 +31,17 @@ import com.wiztek.freader.settings.SettingsManager
 fun SettingsScreen() {
     val navigator = LocalNavigator.currentOrThrow
     val settings by SettingsManager.settings.collectAsState()
+
+    var showThemeSheet by remember { mutableStateOf(false) }
+    var showComingSoonSnackbar by remember { mutableStateOf<String?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(showComingSoonSnackbar) {
+        showComingSoonSnackbar?.let {
+            snackbarHostState.showSnackbar(it)
+            showComingSoonSnackbar = null
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -40,7 +53,8 @@ fun SettingsScreen() {
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -52,7 +66,7 @@ fun SettingsScreen() {
         ) {
             // APPEARANCE SECTION
             SettingsSectionHeader("APPEARANCE")
-            
+
             SettingsToggleItem(
                 title = "Dark Mode",
                 subtitle = "Adjust the app's visual theme",
@@ -66,13 +80,15 @@ fun SettingsScreen() {
                 value = settings.fontScaling,
                 onValueChange = { SettingsManager.setFontScaling(it) },
                 icon = Icons.Default.TextFields,
-                displayValue = "${(settings.fontScaling * 100).toInt()}%"
+                displayValue = "${(settings.fontScaling * 100).toInt()}%",
+                valueRange = 0.8f..2.0f
             )
 
-            SettingsThemeItem(
+            SettingsClickableItem(
                 title = "Reader Theme",
-                subtitle = "Sepia, Paper, or Solarized",
-                icon = Icons.Default.Palette
+                subtitle = themeLabel(settings.theme),
+                icon = Icons.Default.Palette,
+                onClick = { showThemeSheet = true }
             )
 
             // READER OPTIONS SECTION
@@ -86,6 +102,32 @@ fun SettingsScreen() {
                 onCheckedChange = { SettingsManager.setPageTurnAnimation(it) }
             )
 
+            SettingsToggleItem(
+                title = "Two-Column Layout",
+                subtitle = "Use dual columns in landscape",
+                icon = Icons.Default.ViewColumn,
+                checked = settings.useTwoColumns,
+                onCheckedChange = { SettingsManager.setUseTwoColumns(it) }
+            )
+
+            SettingsSliderItem(
+                title = "Line Height",
+                value = settings.lineHeight,
+                onValueChange = { SettingsManager.setLineHeight(it) },
+                icon = Icons.Default.FormatLineSpacing,
+                displayValue = "${(settings.lineHeight * 10).toInt() / 10.0}",
+                valueRange = 1.0f..2.5f
+            )
+
+            SettingsSliderItem(
+                title = "Page Margins",
+                value = settings.pageMargins,
+                onValueChange = { SettingsManager.setPageMargins(it) },
+                icon = Icons.Default.HorizontalSplit,
+                displayValue = "${(settings.pageMargins * 100).toInt()}%",
+                valueRange = 0.5f..2.0f
+            )
+
             // CLOUD SOURCES SECTION
             SettingsSectionHeader("CLOUD SOURCES")
 
@@ -93,27 +135,46 @@ fun SettingsScreen() {
                 name = "Google Drive",
                 description = "Sync library and reading progress",
                 icon = Icons.Default.Cloud,
-                iconColor = Color(0xFF4285F4)
+                iconColor = Color(0xFF4285F4),
+                onClick = { showComingSoonSnackbar = "Google Drive sync — coming soon" }
             )
 
             CloudSourceCard(
                 name = "Dropbox",
                 description = "Import books directly",
                 icon = Icons.Default.Folder,
-                iconColor = Color(0xFF0061FF)
+                iconColor = Color(0xFF0061FF),
+                onClick = { showComingSoonSnackbar = "Dropbox import — coming soon" }
             )
 
             Spacer(Modifier.height(16.dp))
-            
+
             Text(
                 text = "FReader v2.4.0 (Build 829)",
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
             )
         }
     }
+
+    if (showThemeSheet) {
+        ReaderThemeSheet(
+            currentTheme = settings.theme,
+            onThemeSelected = { theme ->
+                SettingsManager.setTheme(theme)
+                showThemeSheet = false
+            },
+            onDismiss = { showThemeSheet = false }
+        )
+    }
+}
+
+private fun themeLabel(theme: ReaderTheme): String = when (theme) {
+    ReaderTheme.SEPIA -> "Sepia"
+    ReaderTheme.PAPER -> "Paper"
+    ReaderTheme.SOLARIZED -> "Solarized"
 }
 
 @Composable
@@ -122,7 +183,7 @@ fun SettingsSectionHeader(title: String) {
         text = title,
         style = MaterialTheme.typography.labelLarge,
         fontWeight = FontWeight.Bold,
-        color = Color(0xFFF05A28), // Orange from design
+        color = Color(0xFFF05A28),
         modifier = Modifier.padding(bottom = 8.dp)
     )
 }
@@ -157,12 +218,36 @@ fun SettingsToggleItem(
 }
 
 @Composable
+fun SettingsClickableItem(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, null, modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        TextButton(onClick = onClick) {
+            Text(subtitle, color = Color(0xFFF05A28), fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
 fun SettingsSliderItem(
     title: String,
     value: Float,
     onValueChange: (Float) -> Unit,
     icon: ImageVector,
-    displayValue: String
+    displayValue: String,
+    valueRange: ClosedFloatingPointRange<Float> = 0.8f..2.0f
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -179,7 +264,7 @@ fun SettingsSliderItem(
             Slider(
                 value = value,
                 onValueChange = onValueChange,
-                valueRange = 0.8f..2.0f,
+                valueRange = valueRange,
                 modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
                 colors = SliderDefaults.colors(
                     thumbColor = Color.White,
@@ -191,26 +276,88 @@ fun SettingsSliderItem(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsThemeItem(title: String, subtitle: String, icon: ImageVector) {
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, null, modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box(Modifier.size(24.dp).clip(CircleShape).background(Color(0xFFF5F5DC)))
-            Box(Modifier.size(24.dp).clip(CircleShape).background(Color.White).border(1.dp, Color(0xFFF05A28), CircleShape))
-            Box(Modifier.size(24.dp).clip(CircleShape).background(Color(0xFF002B36)))
+fun ReaderThemeSheet(
+    currentTheme: ReaderTheme,
+    onThemeSelected: (ReaderTheme) -> Unit,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(modifier = Modifier.padding(bottom = 32.dp)) {
+            Text(
+                "Reader Theme",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
+            )
+            ReaderThemeOption(
+                theme = ReaderTheme.SEPIA,
+                label = "Sepia",
+                color = Color(0xFFF5F5DC),
+                isSelected = currentTheme == ReaderTheme.SEPIA,
+                onClick = { onThemeSelected(ReaderTheme.SEPIA) }
+            )
+            ReaderThemeOption(
+                theme = ReaderTheme.PAPER,
+                label = "Paper White",
+                color = Color.White,
+                isSelected = currentTheme == ReaderTheme.PAPER,
+                onClick = { onThemeSelected(ReaderTheme.PAPER) }
+            )
+            ReaderThemeOption(
+                theme = ReaderTheme.SOLARIZED,
+                label = "Solarized Dark",
+                color = Color(0xFF002B36),
+                isSelected = currentTheme == ReaderTheme.SOLARIZED,
+                onClick = { onThemeSelected(ReaderTheme.SOLARIZED) }
+            )
         }
     }
 }
 
 @Composable
-fun CloudSourceCard(name: String, description: String, icon: ImageVector, iconColor: Color) {
+private fun ReaderThemeOption(
+    theme: ReaderTheme,
+    label: String,
+    color: Color,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(selected = isSelected, onClick = onClick)
+        Spacer(Modifier.width(8.dp))
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(color)
+                .border(if (isSelected) 2.dp else 1.dp, if (isSelected) Color(0xFFF05A28) else MaterialTheme.colorScheme.outline, CircleShape)
+        )
+        Spacer(Modifier.width(12.dp))
+        Text(
+            label,
+            modifier = Modifier.padding(vertical = 12.dp),
+            style = MaterialTheme.typography.bodyLarge
+        )
+    }
+}
+
+@Composable
+fun CloudSourceCard(
+    name: String,
+    description: String,
+    icon: ImageVector,
+    iconColor: Color,
+    onClick: () -> Unit
+) {
     Surface(
+        onClick = onClick,
         shape = RoundedCornerShape(16.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier.fillMaxWidth()
@@ -230,7 +377,7 @@ fun CloudSourceCard(name: String, description: String, icon: ImageVector, iconCo
                 Text(name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            TextButton(onClick = {}) {
+            TextButton(onClick = onClick) {
                 Text("Connect", color = Color(0xFFF05A28), fontWeight = FontWeight.Bold)
             }
         }

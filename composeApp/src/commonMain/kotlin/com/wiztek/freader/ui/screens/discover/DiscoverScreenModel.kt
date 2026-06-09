@@ -38,6 +38,20 @@ class DiscoverScreenModel(
     private val _importState = MutableStateFlow(ImportProgress())
     val importState = _importState.asStateFlow()
 
+    private val _recentImports = MutableStateFlow<List<LibraryBook>>(emptyList())
+    val recentImports = _recentImports.asStateFlow()
+
+    init {
+        screenModelScope.launch {
+            repository.getAllBooks().collect { books ->
+                _recentImports.value = books
+                    .filter { it.filePath.isNotBlank() }
+                    .sortedByDescending { it.addedAt }
+                    .take(10)
+            }
+        }
+    }
+
     fun importFiles(files: List<PlatformFile>) {
         screenModelScope.launch {
             println("Freader: Starting import of ${files.size} files")
@@ -88,6 +102,7 @@ class DiscoverScreenModel(
                             coverPath = coverPath,
                             progress = 0.0,
                             lastReadLocator = null,
+                            lastReadAt = null,
                             addedAt = now.toEpochMilliseconds()
                         )
                         repository.insertBook(book)
