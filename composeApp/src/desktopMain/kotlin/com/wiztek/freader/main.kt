@@ -10,17 +10,13 @@ import com.wiztek.freader.settings.SettingsPersistence
 import org.koin.core.context.startKoin
 
 fun main() = application {
-    val koinApp = remember {
-        startKoin {
-            modules(commonAppModule, jvmAppModule)
-        }
+    val koinApp = startKoin {
+        modules(commonAppModule, jvmAppModule)
     }
 
-    // Initialize Settings safely within Compose context
-    val settingsPersistence = remember { koinApp.koin.get<SettingsPersistence>() }
-    LaunchedEffect(settingsPersistence) {
-        SettingsManager.init(settingsPersistence)
-    }
+    // Initialize Settings before first composition
+    val settingsPersistence = koinApp.koin.get<SettingsPersistence>()
+    SettingsManager.init(settingsPersistence)
 
     Window(
         onCloseRequest = {
