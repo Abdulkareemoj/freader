@@ -1,13 +1,19 @@
 package com.wiztek.freader.ui.components.reader
 
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import com.multiplatform.webview.jsbridge.IJsMessageHandler
 import com.multiplatform.webview.jsbridge.JsMessage
 import com.multiplatform.webview.jsbridge.rememberWebViewJsBridge
 import com.multiplatform.webview.web.*
 import com.wiztek.freader.library.model.LibraryBook
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
@@ -36,21 +42,23 @@ actual fun PublicationReader(
     modifier: Modifier,
     onProgressChanged: (Double, String?) -> Unit,
     onToggleControls: () -> Unit,
-    setNavigationCallback: (((String) -> Unit)?) -> Unit // Updated parameter
+    setNavigationCallback: (((String) -> Unit)?) -> Unit
 ) {
     val streamer = koinInject<DesktopStreamer>()
     val strategyFactory = koinInject<ReaderStrategyFactory>()
-    
+
     var serverPort by remember { mutableStateOf(0) }
     var manifest by remember { mutableStateOf<ReadiumManifest?>(null) }
+    var loadingError by remember { mutableStateOf<String?>(null) }
+    var jsInjected by remember { mutableStateOf(false) }
     val settings by SettingsManager.settings.collectAsState()
     val json = remember { Json { ignoreUnknownKeys = true } }
+    val scope = rememberCoroutineScope()
 
     val state = rememberWebViewState("about:blank")
     val navigator = rememberWebViewNavigator()
     val jsBridge = rememberWebViewJsBridge()
 
-    // Sync external navigation callback
     LaunchedEffect(setNavigationCallback) {
         setNavigationCallback { href: String ->
             val escapedHref = href.replace("'", "\\'")
@@ -58,23 +66,26 @@ actual fun PublicationReader(
         }
     }
 
-    // 1. Initialize streamer and fetch book manifest
-    LaunchedEffect(book) {
+    // 1. Initialize streamer
+    LaunchedEffect(book.id) {
+        loadingError = null
+        jsInjected = false
         try {
             streamer.start()
             serverPort = streamer.port
-            
+
             val strategy = strategyFactory.create(book.format)
             if (strategy is EpubReaderStrategy) {
                 manifest = strategy.getManifest(book)
             }
 
-            // Load the shell URL once the streamer is ready
             if (serverPort > 0) {
-                val shellUrl = "http://localhost:$serverPort/assets/index.html"
-                state.content = WebContent.Url(shellUrl)
+                state.content = WebContent.Url("http://localhost:$serverPort/assets/index.html")
+            } else {
+                loadingError = "Streamer failed to start"
             }
         } catch (e: Exception) {
+            loadingError = "Failed to start reader: ${e.message}"
             println("PublicationReader Error: ${e.message}")
         }
     }
@@ -87,9 +98,7 @@ actual fun PublicationReader(
                 try {
                     val data = json.decodeFromString<ProgressMessage>(message.params)
                     onProgressChanged(data.progress, data.locator)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                } catch (e: Exception) { e.printStackTrace() }
             }
         })
 
@@ -104,44 +113,55 @@ actual fun PublicationReader(
             override fun methodName(): String = "navigateToHref"
             override fun handle(message: JsMessage, navigator: WebViewNavigator?, callback: (String) -> Unit) {
                 try {
-                    val data = json.decodeFromString<NavigateToHrefMessage>(message.params)
-                    // This is for links clicked INSIDE the webview that we might want to handle in Kotlin
-                    // but for now reader.js handles them.
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                    json.decodeFromString<NavigateToHrefMessage>(message.params)
+                } catch (e: Exception) { e.printStackTrace() }
             }
         })
     }
 
-    // 3. Initialize reader in WebView once shell is loaded
+    // 3. Inject reader JS when WebView finishes loading
     LaunchedEffect(state.loadingState, manifest, serverPort) {
         val loadingState = state.loadingState
-        if (loadingState is LoadingState.Finished && serverPort > 0) {
-            // Encode the file path to handle spaces and special characters on Windows
-            val normalizedPath = book.filePath.replace("\\", "/")
-            val encodedPath = normalizedPath.split("/").joinToString("/") { 
-                URLEncoder.encode(it, StandardCharsets.UTF_8.toString()).replace("+", "%20")
+        if (loadingState is LoadingState.Finished && serverPort > 0 && !jsInjected) {
+            try {
+                val normalizedPath = book.filePath.replace("\\", "/")
+                val encodedPath = normalizedPath.split("/").joinToString("/") {
+                    URLEncoder.encode(it, StandardCharsets.UTF_8.toString()).replace("+", "%20")
+                }
+
+                val baseUrl = "http://localhost:$serverPort/$encodedPath/"
+                val locator = book.lastReadLocator ?: "null"
+                val manifestJson = manifest?.let { json.encodeToString(it) } ?: "null"
+                val format = book.format.name
+
+                val escapedBaseUrl = baseUrl.replace("'", "\\'")
+                val escapedLocator = if (locator != "null") locator.replace("'", "\\'") else "null"
+                val escapedManifestJson = manifestJson.replace("'", "\\'").replace("\n", "")
+
+                val js = "window.initReader('$escapedBaseUrl', '$escapedLocator', '$format', '$escapedManifestJson')"
+                navigator.evaluateJavaScript(js)
+                jsInjected = true
+            } catch (e: Exception) {
+                println("JS injection failed: ${e.message}")
+                // Retry after a short delay
+                delay(500)
             }
-            
-            val baseUrl = "http://localhost:$serverPort/$encodedPath/"
-            val locator = book.lastReadLocator ?: "null"
-            val manifestJson = manifest?.let { json.encodeToString(it) } ?: "null"
-            val format = book.format.name
-            
-            // Clean strings for JS injection
-            val escapedBaseUrl = baseUrl.replace("'", "\\'")
-            val escapedLocator = if (locator != "null") locator.replace("'", "\\'") else "null"
-            val escapedManifestJson = manifestJson.replace("'", "\\'").replace("\n", "")
-            
-            val js = "window.initReader('$escapedBaseUrl', '$escapedLocator', '$format', '$escapedManifestJson')"
-            navigator.evaluateJavaScript(js)
         }
     }
 
-    // 4. Sync Settings
+    // 4. Fallback: retry JS injection if WebView finishes but injection was missed
+    LaunchedEffect(state.loadingState) {
+        if (state.loadingState is LoadingState.Finished && serverPort > 0 && !jsInjected) {
+            delay(1000)
+            if (!jsInjected) {
+                loadingError = "Reader took too long to initialize. Try again."
+            }
+        }
+    }
+
+    // 5. Sync reader settings
     LaunchedEffect(settings, state.loadingState) {
-        if (state.loadingState is LoadingState.Finished) {
+        if (state.loadingState is LoadingState.Finished && jsInjected) {
             val appearance = when (settings.theme) {
                 ReaderTheme.SEPIA -> "readium-sepia-on"
                 ReaderTheme.SOLARIZED -> "readium-default-on"
@@ -154,17 +174,45 @@ actual fun PublicationReader(
                 "fontSize" to fontSize,
                 "columnCount" to columnCount,
                 "lineHeight" to settings.lineHeight.toString(),
-                "pageMargins" to settings.pageMargins.toString()
+                "pageMargins" to settings.pageMargins.toString(),
+                "wordSpacing" to settings.wordSpacing.toString(),
+                "letterSpacing" to settings.letterSpacing.toString()
             )
             val settingsJson = json.encodeToString(settingsMap)
             navigator.evaluateJavaScript("window.updateSettings('${settingsJson.replace("'", "\\'")}')")
         }
     }
 
-    WebView(
-        state = state,
-        modifier = modifier.fillMaxSize(),
-        navigator = navigator,
-        webViewJsBridge = jsBridge
-    )
+    Box(modifier = modifier.fillMaxSize()) {
+        WebView(
+            state = state,
+            modifier = Modifier.fillMaxSize(),
+            navigator = navigator,
+            webViewJsBridge = jsBridge
+        )
+
+        if (loadingError != null) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = loadingError ?: "Failed to load reader",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Button(onClick = { loadingError = null }) {
+                        Text("Retry")
+                    }
+                }
+            }
+        }
+    }
 }
