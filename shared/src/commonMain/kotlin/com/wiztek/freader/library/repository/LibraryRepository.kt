@@ -2,6 +2,7 @@ package com.wiztek.freader.library.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOne
 import com.wiztek.freader.database.FreaderDatabase
 import com.wiztek.freader.library.model.Bookmark
 import com.wiztek.freader.library.model.LibraryBook
@@ -31,6 +32,7 @@ class LibraryRepository(database: FreaderDatabase) {
                         volumeNumber = entity.volumeNumber?.toInt(),
                         progress = entity.progress,
                         lastReadLocator = entity.lastReadLocator,
+                        lastReadAt = entity.lastReadAt,
                         addedAt = entity.addedAt
                     )
                 }
@@ -48,7 +50,7 @@ class LibraryRepository(database: FreaderDatabase) {
             seriesName = book.seriesName,
             volumeNumber = book.volumeNumber?.toLong(),
             addedAt = book.addedAt,
-            lastReadAt = null,
+            lastReadAt = book.lastReadAt,
             lastReadLocator = book.lastReadLocator,
             progress = book.progress
         )
@@ -56,6 +58,10 @@ class LibraryRepository(database: FreaderDatabase) {
 
     suspend fun deleteBook(id: String) {
         queries.deleteBook(id)
+    }
+
+    suspend fun renameBook(id: String, newTitle: String) {
+        queries.updateBookTitle(newTitle, id)
     }
 
     suspend fun updateProgress(id: String, progress: Double, locator: String?) {
@@ -131,6 +137,16 @@ class LibraryRepository(database: FreaderDatabase) {
         queries.removeBookFromCollection(collectionId, bookId)
     }
 
+    suspend fun renameCollection(id: String, newName: String) {
+        queries.updateCollectionName(newName, id)
+    }
+
+    fun getBookCountForCollection(collectionId: String): Flow<Long> {
+        return queries.countBooksInCollection(collectionId)
+            .asFlow()
+            .mapToOne(Dispatchers.Default)
+    }
+
     fun getBooksForCollection(collectionId: String): Flow<List<LibraryBook>> {
         return queries.selectBooksForCollection(collectionId)
             .asFlow()
@@ -147,6 +163,8 @@ class LibraryRepository(database: FreaderDatabase) {
                         seriesName = entity.seriesName,
                         volumeNumber = entity.volumeNumber?.toInt(),
                         progress = entity.progress,
+                        lastReadLocator = entity.lastReadLocator,
+                        lastReadAt = entity.lastReadAt,
                         addedAt = entity.addedAt
                     )
                 }
