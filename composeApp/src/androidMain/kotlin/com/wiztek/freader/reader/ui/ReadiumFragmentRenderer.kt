@@ -2,6 +2,7 @@ package com.wiztek.freader.reader.ui
 
 import android.os.Handler
 import android.os.Looper
+import android.view.ViewGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -24,7 +25,6 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.data.ReadError
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.json.JSONObject
-
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.AbsoluteUrl
 import android.net.Uri
@@ -35,9 +35,6 @@ import kotlinx.coroutines.flow.collectLatest
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
-/**
- * A Composable that hosts a Readium Fragment inside a Compose UI.
- */
 @OptIn(ExperimentalReadiumApi::class)
 @Composable
 fun ReadiumFragmentRenderer(
@@ -52,6 +49,7 @@ fun ReadiumFragmentRenderer(
     val containerId = remember { android.view.View.generateViewId() }
     var navigatorFragment by remember { mutableStateOf<androidx.fragment.app.Fragment?>(null) }
     var fragmentError by remember { mutableStateOf<String?>(null) }
+    var retryCount by remember { mutableStateOf(0) }
 
     LaunchedEffect(navigatorFragment, setNavigationCallback) {
         val nav = navigatorFragment
@@ -60,16 +58,13 @@ fun ReadiumFragmentRenderer(
                 val locator = if (href.startsWith("{")) {
                     try {
                         Locator.fromJSON(JSONObject(href))
-                    } catch (e: Exception) {
-                        null
-                    }
+                    } catch (_: Exception) { null }
                 } else {
                     val url = Url(href) ?: return@setNavigationCallback
                     val link = publication.linkWithHref(url)
                     link?.let { publication.locatorFromLink(it) }
                         ?: Locator(href = url, mediaType = MediaType.HTML)
                 }
-
                 locator?.let {
                     when (nav) {
                         is EpubNavigatorFragment -> nav.go(it, animated = true)
@@ -82,11 +77,10 @@ fun ReadiumFragmentRenderer(
         }
     }
 
-    val error = fragmentError
-    if (error != null) {
+    if (fragmentError != null) {
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
             Text(
-                text = error,
+                text = fragmentError ?: "Unknown error",
                 modifier = Modifier.padding(32.dp),
                 color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,
@@ -98,20 +92,38 @@ fun ReadiumFragmentRenderer(
 
     AndroidView(
         modifier = modifier,
-        factory = { context ->
-            FragmentContainerView(context).apply {
+        factory = { ctx ->
+            FragmentContainerView(ctx).apply {
                 id = containerId
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                setBackgroundColor(
+                    android.graphics.Color.parseColor("#FFF5F5F5")
+                )
             }
         },
         update = { container ->
-            val fragmentManager = fragmentActivity.supportFragmentManager
+            val fm = fragmentActivity.supportFragmentManager
+            val existing = fm.findFragmentById(containerId)
 
-            if (fragmentManager.findFragmentById(containerId) == null) {
-                try {
+            when {
+                existing != null && navigatorFragment == null -> {
+                    navigatorFragment = existing
+                    setupNavigatorListeners(existing, onProgressChanged, onToggleControls)
+                }
+                existing != null -> {
+                    // already set up, nothing to do
+                }
+                !container.isAttachedToWindow -> {
+                    android.util.Log.d("FreaderFragmentRend", "Container not attached, deferring")
+                }
+                else -> {
                     val isPdf = publication.metadata.conformsTo.contains(Profile.PDF) ||
-                                publication.readingOrder.all { it.mediaType?.matches(MediaType.PDF) == true }
+                        publication.readingOrder.all { it.mediaType?.matches(MediaType.PDF) == true }
 
-                    android.util.Log.d("FreaderFragmentRend", "Adding ${if (isPdf) "PDF" else "EPUB"} navigator fragment")
+                    android.util.Log.d("FreaderFragmentRend", "Adding ${if (isPdf) "PDF" else "EPUB"} navigator")
 
                     val listener = object : EpubNavigatorFragment.Listener {
                         override fun onResourceLoadFailed(href: Url, error: ReadError) {
@@ -129,7 +141,7 @@ fun ReadiumFragmentRenderer(
                         }
                     }
 
-                    fragmentManager.fragmentFactory = ReadiumFragmentFactory(
+                    fm.fragmentFactory = ReadiumFragmentFactory(
                         publication = publication,
                         initialLocator = initialLocator,
                         listener = listener,
@@ -142,21 +154,38 @@ fun ReadiumFragmentRenderer(
                         EpubNavigatorFragment::class.java
                     }
 
+                    val retry = retryCount
                     Handler(Looper.getMainLooper()).post {
                         try {
-                            fragmentManager.beginTransaction()
+                            fm.beginTransaction()
                                 .replace(containerId, fragmentClass, null)
                                 .commit()
+                            fm.executePendingTransactions()
 
-                            fragmentManager.executePendingTransactions()
-
-                            val nav = fragmentManager.findFragmentById(containerId)
+                            val nav = fm.findFragmentById(containerId)
                             if (nav != null) {
                                 navigatorFragment = nav
                                 setupNavigatorListeners(nav, onProgressChanged, onToggleControls)
-                                android.util.Log.d("FreaderFragmentRend", "Navigator fragment attached successfully")
+                                android.util.Log.d("FreaderFragmentRend", "Navigator fragment attached")
+                            } else if (retry < 3) {
+                                retryCount = retry + 1
+                                Handler(Looper.getMainLooper()).postDelayed({
+                                    try {
+                                        fm.beginTransaction()
+                                            .replace(containerId, fragmentClass, null)
+                                            .commitNow()
+                                        val nav2 = fm.findFragmentById(containerId)
+                                        if (nav2 != null) {
+                                            navigatorFragment = nav2
+                                            setupNavigatorListeners(nav2, onProgressChanged, onToggleControls)
+                                        } else {
+                                            fragmentError = "Failed to create reader view"
+                                        }
+                                    } catch (e: Exception) {
+                                        fragmentError = "Fragment error: ${e.message}"
+                                    }
+                                }, 500)
                             } else {
-                                android.util.Log.e("FreaderFragmentRend", "Navigator fragment is null after transaction")
                                 fragmentError = "Failed to create reader view"
                             }
                         } catch (e: Exception) {
@@ -164,9 +193,6 @@ fun ReadiumFragmentRenderer(
                             fragmentError = "Fragment error: ${e.message}"
                         }
                     }
-                } catch (e: Exception) {
-                    android.util.Log.e("FreaderFragmentRend", "Failed to set up fragment", e)
-                    fragmentError = "Setup error: ${e.message}"
                 }
             }
         }
@@ -186,7 +212,6 @@ private fun setupNavigatorListeners(
                     onProgressChanged(progress, locator.toJSON().toString())
                 }
             }
-
             navigator.addInputListener(object : InputListener {
                 override fun onTap(event: TapEvent): Boolean {
                     onToggleControls()
@@ -201,7 +226,6 @@ private fun setupNavigatorListeners(
                     onProgressChanged(progress, locator.toJSON().toString())
                 }
             }
-
             navigator.addInputListener(object : InputListener {
                 override fun onTap(event: TapEvent): Boolean {
                     onToggleControls()
