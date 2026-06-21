@@ -1,13 +1,21 @@
 {
-  "name": "Freader",
-  "version": "1.0.0",
+  "name": "freader",
   "private": true,
+  "type": "module",
   "workspaces": [
-    "webApp",
-    "shared/build/dist/js/developmentLibrary"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
-    "build": "cd webApp && npm run build",
-    "start": "cd webApp && npm run start"
+    "check": "biome check --write .",
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:mobile": "turbo -F mobile dev",
+    "dev:web": "turbo -F web dev",
+    "dev:desktop": "turbo dev"
+  },
+  "dependencies": {
+    "turbo": "^2.9.18"
   }
 }
