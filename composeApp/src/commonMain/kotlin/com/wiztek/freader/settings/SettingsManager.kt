@@ -75,4 +75,9 @@ object SettingsManager {
         _settings.update { it.copy(letterSpacing = spacing) }
         save()
     }
+
+    fun setOnboardingCompleted() {
+        _settings.update { it.copy(hasSeenOnboarding = true) }
+        save()
+    }
 }

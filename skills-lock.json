@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "kotlin-specialist": {
+      "source": "jeffallan/claude-skills",
+      "sourceType": "github",
+      "skillPath": "skills/kotlin-specialist/SKILL.md",
+      "computedHash": "1a96aa05f4242e0c6f57e2e315db8633aeecaddb4c8e9bf6c21aee0103d00aca"
+    },
+    "kotlin-tooling-agp9-migration": {
+      "source": "Kotlin/kotlin-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/kotlin-tooling-agp9-migration/SKILL.md",
+      "computedHash": "83e8850784e288d7179fb5b7b0c7800fd1e428c7ed35f09cbb5a9bdcf4de0bea"
+    }
+  }
+}

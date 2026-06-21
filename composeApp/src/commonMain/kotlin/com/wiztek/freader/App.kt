@@ -14,8 +14,10 @@ fun App() {
     val settings by SettingsManager.settings.collectAsState()
 
     AppTheme(isDarkTheme = settings.isDarkMode) {
-        // Start from Onboarding for first run experience
-        Navigator(VoyagerScreen.Onboarding) { navigator ->
+        Navigator(
+            if (settings.hasSeenOnboarding) VoyagerScreen.Home
+            else VoyagerScreen.Onboarding
+        ) { navigator ->
             BoxWithConstraints {
                 val screenWidth = maxWidth
 

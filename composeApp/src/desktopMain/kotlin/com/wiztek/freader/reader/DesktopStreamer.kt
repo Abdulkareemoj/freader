@@ -39,6 +39,10 @@ class DesktopStreamer(private val fileSystem: FileSystem) {
                     call.respondText("pong")
                 }
 
+                get("/test") {
+                    call.respondText("Freader Streamer OK on port $port", ContentType.Text.Html)
+                }
+
                 get("/assets/{assetPath...}") {
                     val assetPath = call.parameters.getAll("assetPath")?.joinToString("/") ?: ""
                     try {
@@ -54,7 +58,13 @@ class DesktopStreamer(private val fileSystem: FileSystem) {
 
                 get("/{bookPath...}") {
                     val fullPath = call.parameters.getAll("bookPath")?.joinToString("/") ?: ""
-                    handleRequest(call, fullPath)
+                    println("Streamer: Book request raw=$fullPath")
+                    try {
+                        handleRequest(call, fullPath)
+                    } catch (e: Exception) {
+                        println("Streamer: Error handling request: ${e.message}")
+                        call.respond(HttpStatusCode.InternalServerError)
+                    }
                 }
             }
         }.start(wait = false)

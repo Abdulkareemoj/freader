@@ -1,13 +1,18 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
-    androidTarget()
+    android {
+        namespace = "com.wiztek.freader.compose"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+    }
+
     jvm("desktop")
 
     listOf(
@@ -73,29 +78,19 @@ kotlin {
                 implementation(libs.kotlinx.datetime)
                 
                 // Ktor for local book streaming
-                implementation("io.ktor:ktor-server-core:2.3.12")
-                implementation("io.ktor:ktor-server-netty:2.3.12")
-                implementation("io.ktor:ktor-server-cors:2.3.12")
+                implementation(project.dependencies.platform("io.ktor:ktor-bom:2.3.12"))
+                implementation("io.ktor:ktor-server-core")
+                implementation("io.ktor:ktor-server-netty")
+                implementation("io.ktor:ktor-server-cors")
+                implementation("io.ktor:ktor-io")
             }
         }
-    }
-}
-
-android {
-    namespace = "com.wiztek.freader.compose"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
     }
 }
 
 compose.desktop {
     application {
         mainClass = "com.wiztek.freader.MainKt"
+        jvmArgs += "--enable-native-access=ALL-UNNAMED"
     }
 }

@@ -7,10 +7,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.multiplatform.webview.jsbridge.IJsMessageHandler
-import com.multiplatform.webview.jsbridge.JsMessage
-import com.multiplatform.webview.jsbridge.rememberWebViewJsBridge
-import com.multiplatform.webview.web.*
+import io.github.kdroidfilter.webview.jsbridge.IJsMessageHandler
+import io.github.kdroidfilter.webview.jsbridge.JsMessage
+import io.github.kdroidfilter.webview.jsbridge.rememberWebViewJsBridge
+import io.github.kdroidfilter.webview.web.*
 import com.wiztek.freader.library.model.LibraryBook
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -76,11 +76,16 @@ actual fun PublicationReader(
 
             val strategy = strategyFactory.create(book.format)
             if (strategy is EpubReaderStrategy) {
-                manifest = strategy.getManifest(book)
+                val m = strategy.getManifest(book)
+                println("PublicationReader: manifest=${m != null} readingOrderSize=${m?.readingOrder?.size}")
+                manifest = m
             }
 
             if (serverPort > 0) {
-                state.content = WebContent.Url("http://localhost:$serverPort/assets/index.html")
+                val url = "http://localhost:$serverPort/assets/index.html"
+                println("PublicationReader: Loading $url")
+                jsInjected = false
+                navigator.loadUrl(url)
             } else {
                 loadingError = "Streamer failed to start"
             }
@@ -122,7 +127,13 @@ actual fun PublicationReader(
     // 3. Inject reader JS when WebView finishes loading
     LaunchedEffect(state.loadingState, manifest, serverPort) {
         val loadingState = state.loadingState
-        if (loadingState is LoadingState.Finished && serverPort > 0 && !jsInjected) {
+        val lastUrl = state.lastLoadedUrl
+        val isFinished = loadingState is LoadingState.Finished
+        val portOk = serverPort > 0
+        val alreadyInjected = jsInjected
+        val urlMatches = lastUrl?.startsWith("http://localhost:$serverPort") == true
+        println("PublicationReader: loadingState=$loadingState lastUrl=$lastUrl serverPort=$serverPort jsInjected=$jsInjected (finished=$isFinished portOk=$portOk urlMatches=$urlMatches)")
+        if (isFinished && portOk && !alreadyInjected && urlMatches) {
             try {
                 val normalizedPath = book.filePath.replace("\\", "/")
                 val encodedPath = normalizedPath.split("/").joinToString("/") {
@@ -134,25 +145,33 @@ actual fun PublicationReader(
                 val manifestJson = manifest?.let { json.encodeToString(it) } ?: "null"
                 val format = book.format.name
 
-                val escapedBaseUrl = baseUrl.replace("'", "\\'")
-                val escapedLocator = if (locator != "null") locator.replace("'", "\\'") else "null"
-                val escapedManifestJson = manifestJson.replace("'", "\\'").replace("\n", "")
+                val supportedFormats = listOf("EPUB")
+                if (book.format.name !in supportedFormats) {
+                    loadingError = "Desktop reader does not support ${book.format.name} format yet"
+                    jsInjected = true
+                } else {
+                    val escapedBaseUrl = baseUrl.replace("'", "\\'")
+                    val escapedLocator = if (locator != "null") locator.replace("'", "\\'") else "null"
+                    val escapedManifestJson = manifestJson.replace("'", "\\'").replace("\n", "")
 
-                val js = "window.initReader('$escapedBaseUrl', '$escapedLocator', '$format', '$escapedManifestJson')"
-                navigator.evaluateJavaScript(js)
-                jsInjected = true
+                    val js = "window.initReader('$escapedBaseUrl', '$escapedLocator', '$format', '$escapedManifestJson')"
+                    println("PublicationReader: INJECTING JS - baseUrl=$escapedBaseUrl")
+                    navigator.evaluateJavaScript(js)
+                    jsInjected = true
+                    println("PublicationReader: JS injection success")
+                }
             } catch (e: Exception) {
-                println("JS injection failed: ${e.message}")
-                // Retry after a short delay
+                println("PublicationReader: JS injection failed: ${e.message}")
                 delay(500)
             }
         }
     }
 
     // 4. Fallback: retry JS injection if WebView finishes but injection was missed
-    LaunchedEffect(state.loadingState) {
-        if (state.loadingState is LoadingState.Finished && serverPort > 0 && !jsInjected) {
-            delay(1000)
+    LaunchedEffect(state.lastLoadedUrl) {
+        val url = state.lastLoadedUrl
+        if (url?.startsWith("http://localhost:$serverPort") == true && !jsInjected) {
+            delay(2000)
             if (!jsInjected) {
                 loadingError = "Reader took too long to initialize. Try again."
             }
@@ -183,12 +202,26 @@ actual fun PublicationReader(
         }
     }
 
+    // Debug: Check if WebView loaded
+    LaunchedEffect(state.errorsForCurrentRequest.size) {
+        if (state.errorsForCurrentRequest.isNotEmpty()) {
+            println("PublicationReader: WebView errors: ${state.errorsForCurrentRequest}")
+        }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         WebView(
             state = state,
             modifier = Modifier.fillMaxSize(),
             navigator = navigator,
-            webViewJsBridge = jsBridge
+            webViewJsBridge = jsBridge,
+            onCreated = { nwv ->
+                println("PublicationReader: WebView onCreated: size=${nwv.width}x${nwv.height}")
+                if (nwv.width == 0 && nwv.height == 0 && nwv is java.awt.Component) {
+                    nwv.setSize(1024, 768)
+                    println("PublicationReader: Set initial size to 1024x768")
+                }
+            }
         )
 
         if (loadingError != null) {

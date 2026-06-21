@@ -29,6 +29,9 @@ UPDATE BookEntity SET progress = ?, lastReadLocator = ?, lastReadAt = ? WHERE id
 deleteBook:
 DELETE FROM BookEntity WHERE id = ?;
 
+updateBookTitle:
+UPDATE BookEntity SET title = ? WHERE id = ?;
+
 CREATE TABLE IF NOT EXISTS BookmarkEntity (
     id TEXT NOT NULL PRIMARY KEY,
     bookId TEXT NOT NULL,
@@ -85,3 +88,9 @@ SELECT BookEntity.*
 FROM BookEntity
 JOIN CollectionBookEntity ON BookEntity.id = CollectionBookEntity.bookId
 WHERE CollectionBookEntity.collectionId = ?;
+
+countBooksInCollection:
+SELECT COUNT(*) FROM CollectionBookEntity WHERE collectionId = ?;
+
+updateCollectionName:
+UPDATE CollectionEntity SET name = ? WHERE id = ?;

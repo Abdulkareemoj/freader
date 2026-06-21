@@ -4,7 +4,6 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -99,15 +98,7 @@ fun MobileLayout(navigator: Navigator) {
                                     Icon(Icons.Default.Search, "Search")
                                 }
                             }
-                            IconButton(onClick = { 
-                                scope.launch { 
-                                    snackbarHostState.showSnackbar("No new notifications")
-                                }
-                            }) {
-                                BadgedBox(badge = { Badge { Text("3") } }) {
-                                    Icon(Icons.Outlined.Notifications, "Notifications")
-                                }
-                            }
+
                         }
                     )
                 },

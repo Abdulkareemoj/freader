@@ -13,7 +13,9 @@ window.freader = {
         fontFamily: 'serif',
         columnCount: '1',
         lineHeight: '1.5',
-        pageMargins: '1.0'
+        pageMargins: '1.0',
+        wordSpacing: '0.0',
+        letterSpacing: '0.0'
     },
 
     init: function(baseUrl, initialLocator, format, manifestJson) {
@@ -136,6 +138,8 @@ window.freader = {
         root.style.setProperty("--USER__colCount", this.settings.columnCount || "1");
         root.style.setProperty("--USER__lineHeight", this.settings.lineHeight || "1.5");
         root.style.setProperty("--USER__pageMargins", this.settings.pageMargins || "1.0");
+        root.style.setProperty("--USER__wordSpacing", (this.settings.wordSpacing || "0.0") + "rem");
+        root.style.setProperty("--USER__letterSpacing", (this.settings.letterSpacing || "0.0") + "em");
 
         // Trigger Readium CSS refresh
         if (this.settings.appearance === 'readium-night-on') {

@@ -26,11 +26,20 @@ class EpubReaderStrategy(
             val rootFileDir = rootFilePath.toPath().parent ?: "/".toPath()
             val opfContent = zipFileSystem.read(rootFilePath.toPath()) { readUtf8() }
 
-            val manifestItems = Regex("<item[^>]+id=\"([^\"]+)\"[^>]+href=\"([^\"]+)\"[^>]+media-type=\"([^\"]+)\"").findAll(opfContent)
-                .associate { it.groupValues[1] to (it.groupValues[2] to it.groupValues[3]) }
+            val itemTagRegex = Regex("<item\\s[^>]*/?>")
+            val attrRegex = Regex("""(\w[\w-]*)\s*=\s*"([^"]+)"""")
+            val manifestItems = itemTagRegex.findAll(opfContent).mapNotNull { tagMatch ->
+                val attrs = attrRegex.findAll(tagMatch.value).associate { it.groupValues[1] to it.groupValues[2] }
+                val id = attrs["id"] ?: return@mapNotNull null
+                val href = attrs["href"] ?: return@mapNotNull null
+                val mediaType = attrs["media-type"] ?: return@mapNotNull null
+                id to (href to mediaType)
+            }.toMap()
 
-            val spineItemRefs = Regex("<itemref[^>]+idref=\"([^\"]+)\"").findAll(opfContent)
-                .map { it.groupValues[1] }
+            val spineItemRefs = Regex("""<itemref\s[^>]*/?>""").findAll(opfContent).mapNotNull { tagMatch ->
+                val attrs = attrRegex.findAll(tagMatch.value).associate { it.groupValues[1] to it.groupValues[2] }
+                attrs["idref"]
+            }
 
             val readingOrder = spineItemRefs.mapNotNull { idref ->
                 manifestItems[idref]?.let { (href, type) ->

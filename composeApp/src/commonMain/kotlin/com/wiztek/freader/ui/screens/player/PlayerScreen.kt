@@ -54,11 +54,7 @@ fun PlayerScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 },
-                actions = {
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.Notifications, "Notifications")
-                    }
-                }
+                actions = {}
             )
         }
     ) { padding ->

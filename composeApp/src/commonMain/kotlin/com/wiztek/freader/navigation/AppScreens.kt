@@ -11,6 +11,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.wiztek.freader.library.model.LibraryBook
+import com.wiztek.freader.settings.SettingsManager
 import com.wiztek.freader.library.model.LibraryCollection
 import com.wiztek.freader.library.repository.LibraryRepository
 import com.wiztek.freader.reader.model.BookFormat
@@ -45,7 +46,10 @@ sealed class VoyagerScreen : Screen {
             val navigator = LocalNavigator.currentOrThrow
             var getStarted by remember { mutableStateOf(false) }
             LaunchedEffect(getStarted) {
-                if (getStarted) navigator.replaceAll(Home)
+                if (getStarted) {
+                    SettingsManager.setOnboardingCompleted()
+                    navigator.replaceAll(Home)
+                }
             }
             OnboardingScreen(onFinish = { getStarted = true })
         }
@@ -163,7 +167,7 @@ sealed class VoyagerScreen : Screen {
             val navigator = LocalNavigator.currentOrThrow
             ReaderScreen(
                 book = book
-            )
+            ).Content()
         }
     }
 

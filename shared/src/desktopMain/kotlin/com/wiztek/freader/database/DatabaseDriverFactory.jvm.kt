@@ -12,18 +12,24 @@ actual class DatabaseDriverFactory {
         }
         val databasePath = File(databaseDir, "freader.db")
         
-        val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${databasePath.absolutePath}")
+        var driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${databasePath.absolutePath}")
         
-        // Initialize schema if needed
+        val schema = FreaderDatabase.Schema
         val currentVersion = getVersion(driver)
+        
         if (currentVersion == 0L) {
+            // Check if tables already exist before creating
             if (!isTableExists(driver, "BookEntity")) {
-                FreaderDatabase.Schema.create(driver)
+                schema.create(driver)
             }
-            setVersion(driver, FreaderDatabase.Schema.version)
-        } else if (currentVersion < FreaderDatabase.Schema.version) {
-            FreaderDatabase.Schema.migrate(driver, currentVersion, FreaderDatabase.Schema.version)
-            setVersion(driver, FreaderDatabase.Schema.version)
+            setVersion(driver, schema.version)
+        } else if (currentVersion < schema.version) {
+            // No migrations yet, just recreate the database
+            driver.close()
+            databasePath.delete()
+            driver = JdbcSqliteDriver("jdbc:sqlite:${databasePath.absolutePath}")
+            schema.create(driver)
+            setVersion(driver, schema.version)
         }
         
         return driver
@@ -31,24 +37,26 @@ actual class DatabaseDriverFactory {
 
     private fun isTableExists(driver: SqlDriver, tableName: String): Boolean {
         return driver.executeQuery(
-            null,
-            "SELECT name FROM sqlite_master WHERE type='table' AND name=?;",
+            null, 
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?;", 
             { cursor ->
                 app.cash.sqldelight.db.QueryResult.Value(cursor.next().value)
-            },
+            }, 
             1
-        ) {
+        ) { 
             bindString(0, tableName)
         }.value
     }
 
     private fun getVersion(driver: SqlDriver): Long {
-        val cursor = driver.executeQuery(null, "PRAGMA user_version;", 0)
-        return try {
-            if (cursor.next()) cursor.getLong(0) ?: 0L else 0L
-        } finally {
-            cursor.close()
-        }
+        return driver.executeQuery(null, "PRAGMA user_version;", { cursor ->
+            val next = cursor.next()
+            if (next.value) {
+                app.cash.sqldelight.db.QueryResult.Value(cursor.getLong(0))
+            } else {
+                app.cash.sqldelight.db.QueryResult.Value(0L)
+            }
+        }, 0).value ?: 0L
     }
 
     private fun setVersion(driver: SqlDriver, version: Long) {

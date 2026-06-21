@@ -116,9 +116,6 @@ fun ReadiumFragmentRenderer(
                 existing != null -> {
                     // already set up, nothing to do
                 }
-                !container.isAttachedToWindow -> {
-                    android.util.Log.d("FreaderFragmentRend", "Container not attached, deferring")
-                }
                 else -> {
                     val isPdf = publication.metadata.conformsTo.contains(Profile.PDF) ||
                         publication.readingOrder.all { it.mediaType?.matches(MediaType.PDF) == true }
